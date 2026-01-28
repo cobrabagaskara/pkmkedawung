@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PKM Kedawung Loader
 // @namespace    https://github.com/cobrabagaskara/pkmkedawung
-// @version      1.0.1
+// @version      1.0.2
 // @description  Loader otomatis untuk semua script PKM Kedawung. Ubah di GitHub, update otomatis di semua komputer.
 // @author       cobrabagaskara
 // @match        *://*/*
@@ -11,9 +11,8 @@
 // @grant        GM_addStyle
 // @grant        GM_info
 // @connect      raw.githubusercontent.com
-// @connect      github.com                 // <-- Tambahkan ini
-// @connect      githubusercontent.com      // <-- Tambahkan ini
-// @icon         https://raw.githubusercontent.com/cobrabagaskara/pkmkedawung/main/icon.png
+// @connect      github.com
+// @connect      githubusercontent.com
 // @updateURL    https://raw.githubusercontent.com/cobrabagaskara/pkmkedawung/main/loader.user.js
 // @downloadURL  https://raw.githubusercontent.com/cobrabagaskara/pkmkedawung/main/loader.user.js
 // ==/UserScript==
@@ -28,7 +27,7 @@
         repoBase: 'https://raw.githubusercontent.com/cobrabagaskara/pkmkedawung/main',
         manifestFile: 'manifest.json',
         cacheEnabled: true,
-        debug: false,
+        debug: true,
         checkInterval: 3600000 // 1 jam
     };
 
