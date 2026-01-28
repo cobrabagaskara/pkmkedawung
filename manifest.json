@@ -5,33 +5,16 @@
   "author": "cobrabagaskara",
   "lastUpdated": "2026-01-28",
   "autoUpdate": true,
+  "updateInterval": 3600000,
   "modules": [
     {
-      "id": "screening-form",
-      "name": "Auto Fill Screening Form",
-      "description": "Otomatis mengisi data skrining faktor risiko",
-      "file": "modules/screening-form.js",
+      "id": "test-module",
+      "name": "Test Module",
+      "description": "Module testing - menampilkan pesan di console",
+      "file": "modules/test-module.js",
       "enabled": true,
-      "match": ["*://*/skrining*", "*://*/screening*"]
-    },
-    {
-      "id": "patient-search",
-      "name": "Patient Search Enhancer",
-      "description": "Meningkatkan fitur pencarian pasien",
-      "file": "modules/patient-search.js",
-      "enabled": true,
-      "match": ["*://*/pasien*", "*://*/patient*"]
-    },
-    {
-      "id": "data-export",
-      "name": "Data Export Helper",
-      "description": "Bantuan ekspor data ke Excel/CSV",
-      "file": "modules/data-export.js",
-      "enabled": false,
-      "match": ["*://*/laporan*", "*://*/report*"]
+      "match": ["*://*/*"]
     }
   ],
-  "dependencies": {
-    "utils": "modules/utils.js"
-  }
+  "dependencies": {}
 }
