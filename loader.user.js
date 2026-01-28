@@ -11,6 +11,8 @@
 // @grant        GM_addStyle
 // @grant        GM_info
 // @connect      raw.githubusercontent.com
+// @connect      github.com                 // <-- Tambahkan ini
+// @connect      githubusercontent.com      // <-- Tambahkan ini
 // @icon         https://raw.githubusercontent.com/cobrabagaskara/pkmkedawung/main/icon.png
 // @updateURL    https://raw.githubusercontent.com/cobrabagaskara/pkmkedawung/main/loader.user.js
 // @downloadURL  https://raw.githubusercontent.com/cobrabagaskara/pkmkedawung/main/loader.user.js
