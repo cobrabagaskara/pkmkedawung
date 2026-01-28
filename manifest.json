@@ -1,0 +1,37 @@
+{
+  "name": "PKM Kedawung Automation Suite",
+  "version": "1.0.0",
+  "description": "Kumpulan script otomatisasi untuk PKM Kedawung",
+  "author": "cobrabagaskara",
+  "lastUpdated": "2026-01-28",
+  "autoUpdate": true,
+  "modules": [
+    {
+      "id": "screening-form",
+      "name": "Auto Fill Screening Form",
+      "description": "Otomatis mengisi data skrining faktor risiko",
+      "file": "modules/screening-form.js",
+      "enabled": true,
+      "match": ["*://*/skrining*", "*://*/screening*"]
+    },
+    {
+      "id": "patient-search",
+      "name": "Patient Search Enhancer",
+      "description": "Meningkatkan fitur pencarian pasien",
+      "file": "modules/patient-search.js",
+      "enabled": true,
+      "match": ["*://*/pasien*", "*://*/patient*"]
+    },
+    {
+      "id": "data-export",
+      "name": "Data Export Helper",
+      "description": "Bantuan ekspor data ke Excel/CSV",
+      "file": "modules/data-export.js",
+      "enabled": false,
+      "match": ["*://*/laporan*", "*://*/report*"]
+    }
+  ],
+  "dependencies": {
+    "utils": "modules/utils.js"
+  }
+}
