@@ -1,6 +1,6 @@
 {
   "name": "PKM Kedawung Automation Suite",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Kumpulan script otomatisasi untuk PKM Kedawung",
   "author": "cobrabagaskara",
   "lastUpdated": "2026-01-28",
@@ -13,7 +13,7 @@
       "description": "Module testing - menampilkan pesan di console",
       "file": "modules/test-module.js",
       "enabled": true,
-      "match": ["*://*/*"]
+      "match": []
     }
   ],
   "dependencies": {}
