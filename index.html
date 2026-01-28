@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PKM Kedawung - Tampermonkey Installer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 PKM Kedawung</h1>
+            <p class="subtitle">Sistem Distribusi Script Otomatis</p>
+        </div>
+
+        <div class="card">
+            <div class="status-badge" id="statusBadge"></div>
+            
+            <div class="step active" id="step1">
+                <h2>🚀 Install Loader Script</h2>
+                <p class="description">
+                    Klik tombol di bawah untuk menginstall loader script Tampermonkey.
+                    Script ini akan otomatis mengupdate semua fitur dari repository.
+                </p>
+                
+                <div class="button-group">
+                    <button class="btn-primary" onclick="installLoader()">
+                        📥 Install Loader Script
+                    </button>
+                </div>
+
+                <div class="info-box">
+                    <h4>ℹ️ Cara Install Manual:</h4>
+                    <ol>
+                        <li>Buka Tampermonkey → Create a new script</li>
+                        <li>Copy seluruh kode dari <a href="loader.user.js" target="_blank">loader.user.js</a></li>
+                        <li>Paste dan Save</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="step" id="step2" style="display:none;">
+                <h2>✅ Install Berhasil!</h2>
+                <p class="success-message">
+                    Loader script telah terinstall. Semua fitur akan otomatis ter-update 
+                    setiap ada perubahan di repository.
+                </p>
+
+                <div class="features-list">
+                    <h4>✨ Fitur yang Tersedia:</h4>
+                    <ul id="modulesList"></ul>
+                </div>
+
+                <div class="info-box warning">
+                    <h4>⚠️ Penting:</h4>
+                    <p>Jangan hapus atau edit script "PKM Kedawung Loader" di Tampermonkey. 
+                    Biarkan script ini bekerja otomatis.</p>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="location.reload()">
+                        🔁 Install Ulang
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Ubah sekali di GitHub, berlaku di semua komputer ✨</p>
+            <p class="version">Version: <span id="version">-</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Cek apakah Tampermonkey terinstall
+        function checkTampermonkey() {
+            const hasTM = typeof GM_info !== 'undefined' || 
+                         typeof GM_addStyle !== 'undefined';
+            
+            const badge = document.getElementById('statusBadge');
+            
+            if (navigator.userAgent.includes('Tampermonkey')) {
+                badge.innerHTML = '✅ Tampermonkey Terdeteksi';
+                badge.className = 'status-badge success';
+                return true;
+            } else {
+                badge.innerHTML = '⚠️ Tampermonkey Belum Terinstall';
+                badge.className = 'status-badge warning';
+                showTampermonkeyAlert();
+                return false;
+            }
+        }
+
+        function showTampermonkeyAlert() {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert-box';
+            alertDiv.innerHTML = `
+                <h3>⚠️ Tampermonkey Diperlukan</h3>
+                <p>Install Tampermonkey terlebih dahulu:</p>
+                <ul>
+                    <li>Chrome/Edge: <a href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo" target="_blank">Install Extension</a></li>
+                    <li>Firefox: <a href="https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/" target="_blank">Install Add-on</a></li>
+                </ul>
+            `;
+            document.querySelector('.card').insertBefore(alertDiv, document.querySelector('.step'));
+        }
+
+        // Install loader script
+        function installLoader() {
+            const loaderUrl = 'https://raw.githubusercontent.com/cobrabagaskara/pkmkedawung/main/loader.user.js';
+            
+            fetch(loaderUrl)
+                .then(response => response.text())
+                .then(code => {
+                    // Create Tampermonkey script installation
+                    const script = document.createElement('script');
+                    script.textContent = `
+                        // ==UserScript==
+                        // This script will be installed in Tampermonkey
+                        // ==/UserScript==
+                    `;
+                    
+                    // Use Tampermonkey API to create new script
+                    if (typeof GM_addScript !== 'undefined') {
+                        // Tampermonkey method
+                        window.open('tampermonkey://import?url=' + encodeURIComponent(loaderUrl));
+                    } else {
+                        // Fallback: show installation instructions
+                        showInstallationInstructions(code);
+                    }
+                    
+                    // Move to success step
+                    setTimeout(() => {
+                        document.getElementById('step1').style.display = 'none';
+                        document.getElementById('step2').style.display = 'block';
+                        loadManifest();
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.error('Error installing loader:', error);
+                    alert('Gagal menginstall loader. Silakan install manual.');
+                });
+        }
+
+        function showInstallationInstructions(code) {
+            const instructions = `
+                ==UserScript==
+                ${code}
+                ==/UserScript==
+            `;
+            
+            alert('Copy kode berikut dan paste ke Tampermonkey:\n\n' + instructions);
+        }
+
+        // Load manifest untuk tampilkan daftar modul
+        function loadManifest() {
+            fetch('manifest.json')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('version').textContent = data.version;
+                    
+                    const list = document.getElementById('modulesList');
+                    data.modules.forEach(module => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>${module.name}</strong>: ${module.description}`;
+                        list.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading manifest:', error);
+                });
+        }
+
+        // Initialize
+        window.onload = function() {
+            checkTampermonkey();
+        };
+    </script>
+</body>
+</html>
