@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PKM Kedawung Loader
 // @namespace    https://github.com/cobrabagaskara/pkmkedawung
-// @version      1.0.0
+// @version      1.0.1
 // @description  Loader otomatis untuk semua script PKM Kedawung. Ubah di GitHub, update otomatis di semua komputer.
 // @author       cobrabagaskara
 // @match        *://*/*
