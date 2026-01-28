@@ -1,0 +1,220 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    max-width: 600px;
+    width: 100%;
+}
+
+.header {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.subtitle {
+    font-size: 1.1em;
+    opacity: 0.9;
+}
+
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.status-badge {
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.status-badge.success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.step h2 {
+    color: #2d3748;
+    margin-bottom: 15px;
+    font-size: 1.8em;
+}
+
+.description {
+    color: #4a5568;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.button-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #2d3748;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e0;
+}
+
+.info-box {
+    background: #f7fafc;
+    border-left: 4px solid #4299e1;
+    padding: 15px;
+    margin: 25px 0;
+    border-radius: 4px;
+}
+
+.info-box.warning {
+    border-left-color: #f6ad55;
+    background: #fffaf0;
+}
+
+.info-box h4 {
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.info-box p, .info-box ol {
+    color: #4a5568;
+    font-size: 0.95em;
+}
+
+.info-box a {
+    color: #4299e1;
+    text-decoration: none;
+}
+
+.info-box a:hover {
+    text-decoration: underline;
+}
+
+.success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border-left: 4px solid #28a745;
+}
+
+.features-list {
+    margin: 20px 0;
+}
+
+.features-list h4 {
+    color: #2d3748;
+    margin-bottom: 10px;
+}
+
+.features-list ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.features-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+    color: #4a5568;
+}
+
+.features-list li:last-child {
+    border-bottom: none;
+}
+
+.alert-box {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.alert-box h3 {
+    color: #856404;
+    margin-bottom: 10px;
+}
+
+.alert-box ul {
+    margin-left: 20px;
+    color: #856404;
+}
+
+.alert-box a {
+    color: #0069d9;
+    text-decoration: none;
+}
+
+.alert-box a:hover {
+    text-decoration: underline;
+}
+
+.footer {
+    text-align: center;
+    color: white;
+    margin-top: 30px;
+    padding: 20px;
+}
+
+.footer p {
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+.version {
+    font-weight: 600;
+    margin-top: 5px;
+}
