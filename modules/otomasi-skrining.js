@@ -9,8 +9,8 @@ PKM.log('Otomasi Skrining Faktor Risiko Module loaded', 'info');
 // =====================================
 const screeningData = {
     metadata: {
-        url: "https://cirebon.epuskesmas.id/skriningfaktorrisiko/create/93481",
-        skrining: "93481",
+        url: "https://cirebon.epuskesmas.id/skriningfaktorrisiko/create/*",
+        skrining: "Faktor Resiko",
         judul: "Skrining Faktor Risiko",
         recordedAt: "2026-01-26T16:05:59.510Z",
         totalActions: 20
