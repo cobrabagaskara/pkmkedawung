@@ -84,6 +84,16 @@
     "match": [
       "https://cirebon.epuskesmas.id/skriningfaktorrisiko/create/*"
     ]
+  },
+
+  "otomasi-skrining-diabetes-melitus-dokter-anggi": {
+    "name": "Otomasi Skrining Diabetes Melitus - Dokter Anggi",
+    "description": "Otomasi pengisian form skrining diabetes melitus - Data terbaru dari recording",
+    "version": "1.0",
+    "author": "You",
+    "match": [
+      "https://cirebon.epuskesmas.id/skriningdiabetesmelitus/create/*"
+    ]
   }
 
 
