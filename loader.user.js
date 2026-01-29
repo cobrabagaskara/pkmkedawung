@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PKMKedawung Loader
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      8.1
 // @description  Loader with update notification
 // @author       You
 // @match        *://*/*
