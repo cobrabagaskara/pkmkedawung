@@ -1,277 +1,459 @@
-// Module: PKM Tampermonkey Converter
+// Module: PKM Tampermonkey to Module Converter
 // File: modules/converter-tool.js
-// Description: Konverter script Tampermonkey ke format module PKM
+// Description: Konversi otomatis script Tampermonkey ke format module PKM
 
 PKM.log('Module Converter Tool loaded', 'info');
 
-// Global state untuk converter
-let currentFileData = null;
-let conversionResult = null;
+// ==================== CONFIGURATION ====================
+const CONVERTER_CONFIG = {
+    VERSION: '1.0.0',
+    MAX_FILE_SIZE: 1024 * 1024, // 1MB
+    ALLOWED_TYPES: ['.js', '.user.js'],
+    DEFAULT_MATCH: ['*://*/*'],
+    TEMPLATE: {
+        header: `// Module: {name}
+// Converted by PKM Kedawung Converter v{converterVersion}
+// Original: {originalName} v{originalVersion}
+// Converted on: {date}
 
-// Fungsi utama untuk init converter
-function initConverterTool() {
-    // Cek apakah kita di halaman yang tepat (bisa di mana saja, tapi lebih baik di internal page)
-    if (window.location.href.includes('github.io') || window.location.href.includes('localhost')) {
-        addConverterButton();
-    } else {
-        // Jika di website biasa, tambah button kecil
-        addFloatingConverterButton();
-    }
+PKM.log('{name} loaded', 'info');
+
+// MODULE CODE START`,
+        footer: `// MODULE CODE END
+
+// Auto-initialization
+function initModule() {
+    // Module initialization logic
+    PKM.log('{name} initialized', 'success');
 }
 
-// Tambah button converter ke halaman
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initModule);
+} else {
+    setTimeout(initModule, 100);
+}
+
+PKM.log('{name} ready', 'success');`
+    }
+};
+
+// ==================== STATE MANAGEMENT ====================
+const ConverterState = {
+    currentFile: null,
+    metadata: null,
+    convertedCode: null,
+    jsonEntry: null,
+    isProcessing: false
+};
+
+// ==================== UI ELEMENTS ====================
+let converterModal = null;
+let currentStep = 1;
+
+// ==================== MAIN FUNCTIONS ====================
+
+// Initialize converter
+function initConverter() {
+    PKM.log('Initializing Converter Tool v' + CONVERTER_CONFIG.VERSION, 'info');
+    
+    // Add converter button to page
+    addConverterButton();
+    
+    // Listen for pkm:dashboard-open event to add converter tab
+    document.addEventListener('pkm:dashboard-open', addConverterToDashboard);
+    
+    PKM.log('Converter Tool ready', 'success');
+}
+
+// Add converter floating button
 function addConverterButton() {
+    // Remove existing button if any
+    const existingBtn = document.getElementById('pkm-converter-floating-btn');
+    if (existingBtn) existingBtn.remove();
+    
     const button = document.createElement('button');
-    button.id = 'pkm-converter-btn';
-    button.innerHTML = '🔧 Converter';
-    button.title = 'Konverter Tampermonkey ke Module PKM';
+    button.id = 'pkm-converter-floating-btn';
+    button.innerHTML = '🔄';
+    button.title = 'Konverter Tampermonkey → Module';
     
     Object.assign(button.style, {
         position: 'fixed',
-        bottom: '70px',
+        bottom: '140px',
         right: '20px',
-        width: '60px',
-        height: '60px',
+        width: '50px',
+        height: '50px',
         borderRadius: '50%',
-        background: 'linear-gradient(135deg, #667eea, #764ba2)',
+        background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
         color: 'white',
         border: 'none',
-        fontSize: '24px',
+        fontSize: '22px',
         cursor: 'pointer',
-        zIndex: '99998',
+        zIndex: '99997',
         boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-        transition: 'all 0.3s ease'
+        transition: 'all 0.3s ease',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
     });
     
     button.addEventListener('mouseenter', () => {
-        button.style.transform = 'scale(1.1)';
-        button.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+        button.style.transform = 'scale(1.1) rotate(15deg)';
+        button.style.boxShadow = '0 6px 20px rgba(245, 87, 108, 0.4)';
     });
     
     button.addEventListener('mouseleave', () => {
-        button.style.transform = 'scale(1)';
+        button.style.transform = 'scale(1) rotate(0)';
         button.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
     });
     
     button.addEventListener('click', showConverterModal);
     
     document.body.appendChild(button);
+    PKM.log('Converter button added', 'info');
 }
 
-// Tambah floating button kecil untuk website biasa
-function addFloatingConverterButton() {
-    const button = document.createElement('button');
-    button.id = 'pkm-converter-mini';
-    button.innerHTML = '⚙️';
-    button.title = 'Konverter Script';
-    
-    Object.assign(button.style, {
-        position: 'fixed',
-        bottom: '130px',
-        right: '20px',
-        width: '40px',
-        height: '40px',
-        borderRadius: '50%',
-        background: 'linear-gradient(135deg, #f093fb, #f5576c)',
-        color: 'white',
-        border: 'none',
-        fontSize: '18px',
-        cursor: 'pointer',
-        zIndex: '99997',
-        boxShadow: '0 3px 10px rgba(0,0,0,0.2)',
-        transition: 'all 0.3s ease',
-        opacity: '0.7'
-    });
-    
-    button.addEventListener('mouseenter', () => {
-        button.style.opacity = '1';
-        button.style.transform = 'scale(1.1)';
-    });
-    
-    button.addEventListener('mouseleave', () => {
-        button.style.opacity = '0.7';
-        button.style.transform = 'scale(1)';
-    });
-    
-    button.addEventListener('click', showConverterModal);
-    
-    document.body.appendChild(button);
+// Add converter tab to dashboard
+function addConverterToDashboard() {
+    // This will be called when dashboard opens
+    setTimeout(() => {
+        const dashboard = document.querySelector('.pkm-dashboard-container');
+        if (dashboard && !document.getElementById('pkm-converter-tab')) {
+            addConverterTab(dashboard);
+        }
+    }, 500);
 }
 
-// Tampilkan modal converter
+// Show converter modal
 function showConverterModal() {
-    // Hapus modal lama jika ada
-    const oldModal = document.getElementById('pkm-converter-modal');
-    if (oldModal) oldModal.remove();
+    createConverterModal();
+    showStep(1);
+}
+
+// Create converter modal UI
+function createConverterModal() {
+    // Remove existing modal
+    if (converterModal) {
+        converterModal.remove();
+    }
     
-    // Buat modal baru
-    const modal = document.createElement('div');
-    modal.id = 'pkm-converter-modal';
-    
-    modal.innerHTML = `
-    <div class="pkm-converter-wrapper">
-        <div class="converter-header">
-            <h3><i class="fas fa-exchange-alt"></i> Konverter Tampermonkey → Module PKM</h3>
-            <button class="converter-close">&times;</button>
-        </div>
-        
-        <div class="converter-body">
-            <!-- Step 1: Upload -->
-            <div class="converter-step active" id="step1">
-                <h4>📁 1. Upload File .user.js</h4>
-                <div class="upload-area" id="uploadArea">
-                    <div class="upload-icon">📤</div>
-                    <p class="upload-text">Klik atau drop file .user.js di sini</p>
-                    <input type="file" id="fileInput" accept=".js,.user.js" style="display: none;">
-                    <p class="upload-hint">File dari export Tampermonkey</p>
-                </div>
-                
-                <div class="file-info" id="fileInfo" style="display: none;">
-                    <p><strong>📄 File:</strong> <span id="fileName"></span></p>
-                    <p><strong>📏 Size:</strong> <span id="fileSize"></span> KB</p>
-                    <button class="btn-remove" id="removeFile">Hapus File</button>
-                </div>
+    converterModal = document.createElement('div');
+    converterModal.id = 'pkm-converter-modal';
+    converterModal.innerHTML = `
+    <div class="converter-modal-overlay" id="converterOverlay">
+        <div class="converter-modal-container">
+            <div class="converter-modal-header">
+                <h2>
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Konverter Tampermonkey → Module</span>
+                </h2>
+                <button class="converter-modal-close" id="converterCloseBtn">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
-            <!-- Step 2: Preview -->
-            <div class="converter-step" id="step2" style="display: none;">
-                <h4>👁️ 2. Preview Hasil Konversi</h4>
-                
-                <div class="preview-section">
-                    <h5>📋 Metadata:</h5>
-                    <div class="metadata-grid" id="metadataGrid"></div>
-                </div>
-                
-                <div class="preview-buttons">
-                    <button class="btn-convert" id="btnConvert">
-                        <i class="fas fa-magic"></i> Proses Konversi
-                    </button>
-                    <button class="btn-back" id="btnBackStep1">
-                        <i class="fas fa-arrow-left"></i> Ganti File
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Step 3: Results -->
-            <div class="converter-step" id="step3" style="display: none;">
-                <h4>✅ 3. Hasil Konversi</h4>
-                
-                <div class="result-section">
-                    <div class="result-box">
-                        <h5><i class="fas fa-file-code"></i> File Module (.js)</h5>
-                        <div class="code-display">
-                            <pre><code id="moduleCode"></code></pre>
-                        </div>
-                        <button class="btn-download" id="downloadModule">
-                            <i class="fas fa-download"></i> Download module.js
-                        </button>
+            <div class="converter-modal-body">
+                <!-- Step 1: Upload -->
+                <div class="converter-step step-1" data-step="1">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <h3>Upload File Tampermonkey</h3>
                     </div>
                     
-                    <div class="result-box">
-                        <h5><i class="fas fa-file-alt"></i> Entry modules.json</h5>
-                        <div class="code-display">
-                            <pre><code id="jsonEntry"></code></pre>
+                    <div class="step-content">
+                        <div class="upload-container" id="uploadContainer">
+                            <div class="upload-area" id="uploadArea">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <h4>Drop file di sini atau klik untuk upload</h4>
+                                <p class="upload-subtitle">File .user.js dari export Tampermonkey</p>
+                                <p class="upload-hint">Maksimal 1MB • Format: .js atau .user.js</p>
+                                <input type="file" id="fileUploadInput" accept=".js,.user.js" hidden>
+                                <button class="btn btn-primary" id="selectFileBtn">
+                                    <i class="fas fa-folder-open"></i> Pilih File
+                                </button>
+                            </div>
+                            
+                            <div class="file-preview" id="filePreview" style="display: none;">
+                                <div class="file-info">
+                                    <div class="file-icon">
+                                        <i class="fas fa-file-code"></i>
+                                    </div>
+                                    <div class="file-details">
+                                        <h4 id="fileName">File Name</h4>
+                                        <p class="file-meta">
+                                            <span id="fileSize">0 KB</span>
+                                            • 
+                                            <span id="fileType">.js</span>
+                                        </p>
+                                    </div>
+                                    <button class="btn btn-danger btn-sm" id="removeFileBtn">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <button class="btn btn-success btn-block" id="processFileBtn">
+                                    <i class="fas fa-cogs"></i> Proses Konversi
+                                </button>
+                            </div>
                         </div>
-                        <div class="btn-group">
-                            <button class="btn-copy" id="copyJson">
-                                <i class="far fa-copy"></i> Copy
+                    </div>
+                </div>
+                
+                <!-- Step 2: Preview & Edit -->
+                <div class="converter-step step-2" data-step="2" style="display: none;">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <h3>Preview & Edit Metadata</h3>
+                    </div>
+                    
+                    <div class="step-content">
+                        <div class="metadata-editor">
+                            <div class="form-group">
+                                <label for="moduleName">
+                                    <i class="fas fa-tag"></i> Nama Module
+                                </label>
+                                <input type="text" id="moduleName" class="form-control" 
+                                       placeholder="Contoh: otomasi-skrining">
+                                <small class="form-text">Nama file tanpa ekstensi .js</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="moduleDisplayName">
+                                    <i class="fas fa-heading"></i> Display Name
+                                </label>
+                                <input type="text" id="moduleDisplayName" class="form-control" 
+                                       placeholder="Contoh: Otomasi Skrining">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="moduleDescription">
+                                    <i class="fas fa-align-left"></i> Deskripsi
+                                </label>
+                                <textarea id="moduleDescription" class="form-control" rows="2"
+                                          placeholder="Deskripsi fungsi module"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="moduleVersion">
+                                    <i class="fas fa-code-branch"></i> Versi
+                                </label>
+                                <input type="text" id="moduleVersion" class="form-control" 
+                                       value="1.0.0" placeholder="1.0.0">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="moduleAuthor">
+                                    <i class="fas fa-user"></i> Author
+                                </label>
+                                <input type="text" id="moduleAuthor" class="form-control" 
+                                       placeholder="Nama developer">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="moduleMatch">
+                                    <i class="fas fa-globe"></i> Match Patterns
+                                </label>
+                                <div class="match-patterns" id="matchPatternsContainer">
+                                    <!-- Match patterns akan diisi secara dinamis -->
+                                </div>
+                                <button class="btn btn-outline btn-sm" id="addMatchPatternBtn">
+                                    <i class="fas fa-plus"></i> Tambah Pattern
+                                </button>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-code"></i> Preview Kode
+                                </label>
+                                <div class="code-preview-container">
+                                    <pre><code id="codePreview">// Kode akan muncul di sini...</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step-actions">
+                            <button class="btn btn-secondary" id="backToStep1Btn">
+                                <i class="fas fa-arrow-left"></i> Kembali
                             </button>
-                            <button class="btn-download" id="downloadJson">
-                                <i class="fas fa-download"></i> Download
+                            <button class="btn btn-primary" id="generateModuleBtn">
+                                <i class="fas fa-file-export"></i> Generate Module
                             </button>
                         </div>
                     </div>
                 </div>
                 
-                <div class="instructions">
-                    <h5><i class="fas fa-info-circle"></i> Cara Pakai:</h5>
-                    <ol>
-                        <li><strong>Download module.js</strong> dan upload ke folder <code>modules/</code> di GitHub</li>
-                        <li><strong>Copy entry JSON</strong> dan paste ke file <code>modules/modules.json</code></li>
-                        <li>Commit perubahan → Module siap digunakan!</li>
-                    </ol>
-                </div>
-                
-                <div class="final-actions">
-                    <button class="btn-new" id="btnNewConversion">
-                        <i class="fas fa-redo"></i> Konversi File Lain
-                    </button>
-                    <button class="btn-close-modal" id="btnCloseModal">
-                        <i class="fas fa-times"></i> Tutup
-                    </button>
+                <!-- Step 3: Results -->
+                <div class="converter-step step-3" data-step="3" style="display: none;">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <h3>Download Hasil Konversi</h3>
+                    </div>
+                    
+                    <div class="step-content">
+                        <div class="success-message">
+                            <div class="success-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h4>Konversi Berhasil!</h4>
+                            <p>Module telah siap untuk digunakan.</p>
+                        </div>
+                        
+                        <div class="results-container">
+                            <div class="result-card">
+                                <div class="result-header">
+                                    <i class="fas fa-file-code"></i>
+                                    <h5>File Module (.js)</h5>
+                                </div>
+                                <div class="result-body">
+                                    <div class="code-snippet" id="moduleCodeResult">
+                                        // Module code akan muncul di sini
+                                    </div>
+                                    <button class="btn btn-success btn-block" id="downloadModuleBtn">
+                                        <i class="fas fa-download"></i> Download module.js
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="result-card">
+                                <div class="result-header">
+                                    <i class="fas fa-file-alt"></i>
+                                    <h5>Entry untuk modules.json</h5>
+                                </div>
+                                <div class="result-body">
+                                    <div class="code-snippet" id="jsonEntryResult">
+                                        // JSON entry akan muncul di sini
+                                    </div>
+                                    <div class="result-actions">
+                                        <button class="btn btn-info" id="copyJsonBtn">
+                                            <i class="far fa-copy"></i> Copy JSON
+                                        </button>
+                                        <button class="btn btn-success" id="downloadJsonBtn">
+                                            <i class="fas fa-download"></i> Download
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="usage-instructions">
+                            <h5><i class="fas fa-info-circle"></i> Cara Menggunakan:</h5>
+                            <ol>
+                                <li><strong>Download file module.js</strong> dan upload ke folder <code>modules/</code> di repository GitHub</li>
+                                <li><strong>Copy entry JSON</strong> di atas dan paste ke file <code>modules/modules.json</code></li>
+                                <li><strong>Commit perubahan</strong> di GitHub → Module otomatis tersedia untuk semua user!</li>
+                                <li>User dapat toggle module via dashboard PKM Kedawung</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="step-actions">
+                            <button class="btn btn-secondary" id="newConversionBtn">
+                                <i class="fas fa-redo"></i> Konversi File Lain
+                            </button>
+                            <button class="btn btn-primary" id="closeConverterBtn">
+                                <i class="fas fa-check"></i> Selesai
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="converter-footer">
-            <div class="progress-indicator">
-                <span class="progress-dot active" data-step="1"></span>
-                <span class="progress-line"></span>
-                <span class="progress-dot" data-step="2"></span>
-                <span class="progress-line"></span>
-                <span class="progress-dot" data-step="3"></span>
+            
+            <div class="converter-modal-footer">
+                <div class="progress-indicator">
+                    <div class="progress-step ${currentStep >= 1 ? 'active' : ''}" data-step="1">
+                        <div class="step-dot"></div>
+                        <span class="step-label">Upload</span>
+                    </div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step ${currentStep >= 2 ? 'active' : ''}" data-step="2">
+                        <div class="step-dot"></div>
+                        <span class="step-label">Edit</span>
+                    </div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step ${currentStep >= 3 ? 'active' : ''}" data-step="3">
+                        <div class="step-dot"></div>
+                        <span class="step-label">Download</span>
+                    </div>
+                </div>
+                <div class="converter-version">
+                    PKM Converter v${CONVERTER_CONFIG.VERSION}
+                </div>
             </div>
-            <p class="converter-version">PKM Converter v1.0</p>
         </div>
     </div>
     `;
     
-    document.body.appendChild(modal);
-    setupConverterStyles();
+    document.body.appendChild(converterModal);
+    injectConverterStyles();
     setupConverterEvents();
+    
+    PKM.log('Converter modal created', 'info');
 }
 
-// Setup CSS untuk converter
-function setupConverterStyles() {
+// Inject CSS styles for converter
+function injectConverterStyles() {
     const styles = `
+    /* Converter Modal Styles */
     #pkm-converter-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 1000000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     
-    .pkm-converter-wrapper {
-        background: white;
-        width: 90%;
-        max-width: 800px;
-        max-height: 90vh;
-        border-radius: 12px;
-        overflow: hidden;
+    .converter-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.75);
         display: flex;
-        flex-direction: column;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000000;
+        backdrop-filter: blur(5px);
+        animation: fadeIn 0.3s ease;
     }
     
-    .converter-header {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .converter-modal-container {
+        background: white;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 900px;
+        max-height: 90vh;
+        overflow: hidden;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        animation: slideUp 0.4s ease;
+    }
+    
+    @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .converter-modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 20px;
+        padding: 20px 30px;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
     
-    .converter-header h3 {
+    .converter-modal-header h2 {
         margin: 0;
-        font-size: 1.3em;
+        font-size: 1.5em;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
     }
     
-    .converter-close {
+    .converter-modal-close {
         background: rgba(255,255,255,0.2);
         border: none;
         color: white;
-        font-size: 28px;
         width: 40px;
         height: 40px;
         border-radius: 50%;
@@ -279,180 +461,341 @@ function setupConverterStyles() {
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.3s;
+        font-size: 20px;
+        transition: all 0.3s ease;
     }
     
-    .converter-close:hover {
+    .converter-modal-close:hover {
         background: rgba(255,255,255,0.3);
         transform: rotate(90deg);
     }
     
-    .converter-body {
+    .converter-modal-body {
         padding: 30px;
         overflow-y: auto;
-        flex-grow: 1;
+        max-height: 65vh;
     }
     
     .converter-step {
-        animation: fadeIn 0.3s ease;
+        animation: fadeInUp 0.4s ease;
     }
     
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
     
-    .converter-step h4 {
-        margin-top: 0;
-        color: #333;
-        font-size: 1.2em;
+    .step-header {
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-bottom: 20px;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .step-number {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 18px;
+    }
+    
+    .step-header h3 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.3em;
+    }
+    
+    /* Upload Area */
+    .upload-container {
+        margin: 20px 0;
     }
     
     .upload-area {
         border: 3px dashed #667eea;
         border-radius: 12px;
-        padding: 40px 20px;
+        padding: 50px 30px;
         text-align: center;
-        cursor: pointer;
-        transition: all 0.3s;
         background: #f8f9ff;
+        transition: all 0.3s ease;
+        cursor: pointer;
     }
     
     .upload-area:hover {
         background: #f0f2ff;
         border-color: #764ba2;
+        transform: translateY(-2px);
+    }
+    
+    .upload-area.dragover {
+        background: #e8f4ff;
+        border-color: #3498db;
+        transform: scale(1.02);
     }
     
     .upload-icon {
         font-size: 48px;
-        margin-bottom: 15px;
         color: #667eea;
+        margin-bottom: 20px;
     }
     
-    .upload-text {
-        font-size: 1.1em;
-        color: #333;
-        margin-bottom: 10px;
-        font-weight: 500;
+    .upload-area h4 {
+        margin: 0 0 10px 0;
+        color: #2c3e50;
+        font-size: 1.2em;
+    }
+    
+    .upload-subtitle {
+        color: #666;
+        margin-bottom: 5px;
     }
     
     .upload-hint {
-        color: #666;
+        color: #999;
         font-size: 0.9em;
+        margin-top: 15px;
+    }
+    
+    /* File Preview */
+    .file-preview {
+        margin-top: 30px;
+        animation: fadeIn 0.5s ease;
     }
     
     .file-info {
-        margin-top: 20px;
-        padding: 15px;
-        background: #f0f7ff;
-        border-radius: 8px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
         border-left: 4px solid #3498db;
     }
     
-    .btn-remove {
-        background: #e74c3c;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 6px;
-        cursor: pointer;
-        margin-top: 10px;
-        font-size: 0.9em;
-        transition: background 0.3s;
+    .file-icon {
+        font-size: 32px;
+        color: #667eea;
     }
     
-    .btn-remove:hover {
-        background: #c0392b;
+    .file-details h4 {
+        margin: 0 0 5px 0;
+        color: #2c3e50;
     }
     
-    .metadata-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 15px;
-        margin: 20px 0;
-    }
-    
-    .metadata-item {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 8px;
-    }
-    
-    .metadata-label {
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 5px;
-        font-size: 0.9em;
-    }
-    
-    .metadata-value {
+    .file-meta {
         color: #666;
-        font-family: monospace;
-        word-break: break-all;
+        font-size: 0.9em;
+        margin: 0;
     }
     
-    .preview-buttons {
-        display: flex;
-        gap: 15px;
-        margin-top: 30px;
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 20px;
     }
     
-    .btn-convert, .btn-back, .btn-new, .btn-close-modal {
-        padding: 12px 24px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.3s;
+    .form-group label {
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 8px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-text {
+        display: block;
+        margin-top: 5px;
+        color: #666;
+        font-size: 0.85em;
+    }
+    
+    /* Match Patterns */
+    .match-patterns {
+        display: flex;
+        flex-direction: column;
         gap: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .match-pattern {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .match-pattern input {
         flex: 1;
     }
     
-    .btn-convert {
+    .match-pattern button {
+        background: #e74c3c;
+        color: white;
+        border: none;
+        width: 40px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    
+    .match-pattern button:hover {
+        background: #c0392b;
+    }
+    
+    /* Code Preview */
+    .code-preview-container {
+        background: #2c3e50;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+    
+    .code-preview-container pre {
+        margin: 0;
+        padding: 15px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .code-preview-container code {
+        color: #ecf0f1;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+    
+    /* Buttons */
+    .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-success {
         background: linear-gradient(135deg, #2ecc71, #27ae60);
         color: white;
     }
     
-    .btn-convert:hover {
+    .btn-success:hover {
+        background: linear-gradient(135deg, #27ae60, #219653);
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
     }
     
-    .btn-back {
+    .btn-secondary {
         background: #95a5a6;
         color: white;
     }
     
-    .btn-back:hover {
+    .btn-secondary:hover {
         background: #7f8c8d;
     }
     
-    .btn-new {
-        background: #3498db;
-        color: white;
-    }
-    
-    .btn-new:hover {
-        background: #2980b9;
-    }
-    
-    .btn-close-modal {
+    .btn-danger {
         background: #e74c3c;
         color: white;
     }
     
-    .btn-close-modal:hover {
+    .btn-danger:hover {
         background: #c0392b;
     }
     
-    .result-section {
+    .btn-info {
+        background: #3498db;
+        color: white;
+    }
+    
+    .btn-info:hover {
+        background: #2980b9;
+    }
+    
+    .btn-outline {
+        background: transparent;
+        border: 2px solid #667eea;
+        color: #667eea;
+    }
+    
+    .btn-outline:hover {
+        background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+    
+    .btn-block {
+        display: block;
+        width: 100%;
+    }
+    
+    .step-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+    
+    /* Results */
+    .success-message {
+        text-align: center;
+        padding: 30px;
+        background: linear-gradient(135deg, #f8fff8, #f0fff0);
+        border-radius: 12px;
+        margin-bottom: 30px;
+        border: 2px solid #2ecc71;
+    }
+    
+    .success-icon {
+        font-size: 60px;
+        color: #2ecc71;
+        margin-bottom: 20px;
+    }
+    
+    .success-message h4 {
+        margin: 0 0 10px 0;
+        color: #27ae60;
+        font-size: 1.4em;
+    }
+    
+    .results-container {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
@@ -460,101 +803,85 @@ function setupConverterStyles() {
     }
     
     @media (max-width: 768px) {
-        .result-section {
+        .results-container {
             grid-template-columns: 1fr;
         }
     }
     
-    .result-box {
+    .result-card {
         background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
+        border-radius: 12px;
+        overflow: hidden;
         border: 1px solid #e0e0e0;
     }
     
-    .result-box h5 {
-        margin-top: 0;
-        color: #333;
+    .result-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 15px 20px;
         display: flex;
         align-items: center;
         gap: 10px;
     }
     
-    .code-display {
+    .result-header h5 {
+        margin: 0;
+        font-size: 1.1em;
+    }
+    
+    .result-body {
+        padding: 20px;
+    }
+    
+    .code-snippet {
         background: #2c3e50;
         color: #ecf0f1;
         padding: 15px;
-        border-radius: 6px;
-        margin: 15px 0;
-        max-height: 200px;
-        overflow-y: auto;
+        border-radius: 8px;
         font-family: 'Courier New', monospace;
-        font-size: 0.9em;
+        font-size: 12px;
+        max-height: 150px;
+        overflow-y: auto;
+        margin-bottom: 15px;
+        white-space: pre-wrap;
+        word-break: break-all;
     }
     
-    .btn-download, .btn-copy {
-        padding: 10px 20px;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.3s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-right: 10px;
-    }
-    
-    .btn-download {
-        background: #3498db;
-        color: white;
-    }
-    
-    .btn-download:hover {
-        background: #2980b9;
-    }
-    
-    .btn-copy {
-        background: #2ecc71;
-        color: white;
-    }
-    
-    .btn-copy:hover {
-        background: #27ae60;
-    }
-    
-    .btn-group {
+    .result-actions {
         display: flex;
         gap: 10px;
-        margin-top: 10px;
     }
     
-    .instructions {
+    /* Instructions */
+    .usage-instructions {
         background: #fff8e1;
         padding: 20px;
         border-radius: 8px;
-        margin: 20px 0;
+        margin: 25px 0;
         border-left: 4px solid #f39c12;
     }
     
-    .instructions ol {
-        margin: 10px 0 0 0;
+    .usage-instructions h5 {
+        margin-top: 0;
+        color: #d35400;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .usage-instructions ol {
+        margin: 15px 0 0 0;
         padding-left: 20px;
     }
     
-    .instructions li {
-        margin-bottom: 8px;
+    .usage-instructions li {
+        margin-bottom: 10px;
         line-height: 1.5;
     }
     
-    .final-actions {
-        display: flex;
-        gap: 15px;
-        margin-top: 30px;
-    }
-    
-    .converter-footer {
-        padding: 15px 20px;
+    /* Footer */
+    .converter-modal-footer {
+        padding: 20px 30px;
         background: #f8f9fa;
         border-top: 1px solid #eee;
         display: flex;
@@ -568,17 +895,30 @@ function setupConverterStyles() {
         gap: 5px;
     }
     
-    .progress-dot {
+    .progress-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .step-dot {
         width: 12px;
         height: 12px;
         border-radius: 50%;
         background: #ddd;
-        transition: all 0.3s;
+        transition: all 0.3s ease;
     }
     
-    .progress-dot.active {
+    .progress-step.active .step-dot {
         background: #667eea;
-        transform: scale(1.2);
+        transform: scale(1.3);
+    }
+    
+    .step-label {
+        font-size: 0.8em;
+        color: #666;
+        font-weight: 500;
     }
     
     .progress-line {
@@ -590,6 +930,7 @@ function setupConverterStyles() {
     .converter-version {
         color: #666;
         font-size: 0.9em;
+        font-weight: 500;
     }
     `;
     
@@ -598,337 +939,515 @@ function setupConverterStyles() {
     document.head.appendChild(styleElement);
 }
 
-// Setup event listeners untuk converter
+// Setup event listeners
 function setupConverterEvents() {
-    // Close modal
-    document.querySelector('.converter-close').addEventListener('click', () => {
-        document.getElementById('pkm-converter-modal').remove();
+    // Close button
+    document.getElementById('converterCloseBtn').addEventListener('click', closeConverter);
+    
+    // Step 1: Upload
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileUploadInput');
+    const selectFileBtn = document.getElementById('selectFileBtn');
+    
+    selectFileBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', handleFileSelect);
+    
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
     });
     
-    // Upload area click
-    document.getElementById('uploadArea').addEventListener('click', () => {
-        document.getElementById('fileInput').click();
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
     });
     
-    // File input change
-    document.getElementById('fileInput').addEventListener('change', handleFileUpload);
-    
-    // Remove file button
-    document.getElementById('removeFile')?.addEventListener('click', removeUploadedFile);
-    
-    // Back button step 2
-    document.getElementById('btnBackStep1')?.addEventListener('click', () => {
-        showStep(1);
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        if (e.dataTransfer.files.length > 0) {
+            handleFileSelect({ target: { files: e.dataTransfer.files } });
+        }
     });
     
-    // Convert button
-    document.getElementById('btnConvert')?.addEventListener('click', processConversion);
+    // Step 1 buttons
+    document.getElementById('removeFileBtn')?.addEventListener('click', resetFile);
+    document.getElementById('processFileBtn')?.addEventListener('click', processFile);
     
-    // Download buttons
-    document.getElementById('downloadModule')?.addEventListener('click', downloadModuleFile);
-    document.getElementById('downloadJson')?.addEventListener('click', downloadJsonFile);
+    // Step 2 buttons
+    document.getElementById('backToStep1Btn')?.addEventListener('click', () => showStep(1));
+    document.getElementById('generateModuleBtn')?.addEventListener('click', generateModule);
+    document.getElementById('addMatchPatternBtn')?.addEventListener('click', addMatchPattern);
     
-    // Copy JSON button
-    document.getElementById('copyJson')?.addEventListener('click', copyJsonToClipboard);
+    // Step 3 buttons
+    document.getElementById('downloadModuleBtn')?.addEventListener('click', downloadModuleFile);
+    document.getElementById('downloadJsonBtn')?.addEventListener('click', downloadJsonFile);
+    document.getElementById('copyJsonBtn')?.addEventListener('click', copyJsonToClipboard);
+    document.getElementById('newConversionBtn')?.addEventListener('click', startNewConversion);
+    document.getElementById('closeConverterBtn')?.addEventListener('click', closeConverter);
     
-    // New conversion button
-    document.getElementById('btnNewConversion')?.addEventListener('click', startNewConversion);
-    
-    // Close modal button
-    document.getElementById('btnCloseModal')?.addEventListener('click', () => {
-        document.getElementById('pkm-converter-modal').remove();
+    // Real-time preview updates
+    const previewFields = ['moduleName', 'moduleDisplayName', 'moduleDescription', 
+                          'moduleVersion', 'moduleAuthor'];
+    previewFields.forEach(fieldId => {
+        document.getElementById(fieldId)?.addEventListener('input', updatePreview);
     });
 }
 
-// Handle file upload
-function handleFileUpload(event) {
+// ==================== CONVERSION LOGIC ====================
+
+// Handle file selection
+function handleFileSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
     
-    if (!file.name.endsWith('.js') && !file.name.endsWith('.user.js')) {
-        alert('⚠️ Harap upload file JavaScript (.js atau .user.js)');
+    // Validate file
+    if (!CONVERTER_CONFIG.ALLOWED_TYPES.some(type => file.name.endsWith(type))) {
+        alert('❌ Format file tidak didukung. Harap upload file .js atau .user.js');
         return;
     }
     
+    if (file.size > CONVERTER_CONFIG.MAX_FILE_SIZE) {
+        alert(`❌ File terlalu besar (${(file.size / 1024).toFixed(1)}KB). Maksimal 1MB`);
+        return;
+    }
+    
+    // Read file
     const reader = new FileReader();
     reader.onload = function(e) {
-        currentFileData = {
-            name: file.name.replace('.user.js', '').replace('.js', ''),
+        ConverterState.currentFile = {
+            name: file.name,
+            size: (file.size / 1024).toFixed(1),
             content: e.target.result,
-            size: (file.size / 1024).toFixed(2)
+            lastModified: file.lastModified
         };
         
-        // Update UI
-        document.getElementById('fileName').textContent = file.name;
-        document.getElementById('fileSize').textContent = currentFileData.size;
-        document.getElementById('fileInfo').style.display = 'block';
+        // Show file preview
+        showFilePreview();
         
-        // Extract metadata dan show step 2
-        extractMetadata(currentFileData.content);
-        showStep(2);
+        // Extract metadata
+        extractMetadata();
+        
+        PKM.log(`File loaded: ${file.name} (${ConverterState.currentFile.size}KB)`, 'info');
+    };
+    
+    reader.onerror = function() {
+        alert('❌ Gagal membaca file');
+        PKM.log('File read error', 'error');
     };
     
     reader.readAsText(file);
 }
 
-// Remove uploaded file
-function removeUploadedFile() {
-    currentFileData = null;
-    document.getElementById('fileInput').value = '';
-    document.getElementById('fileInfo').style.display = 'none';
-    showStep(1);
+// Show file preview
+function showFilePreview() {
+    const uploadArea = document.getElementById('uploadArea');
+    const filePreview = document.getElementById('filePreview');
+    
+    document.getElementById('fileName').textContent = ConverterState.currentFile.name;
+    document.getElementById('fileSize').textContent = ConverterState.currentFile.size + ' KB';
+    document.getElementById('fileType').textContent = ConverterState.currentFile.name.split('.').pop();
+    
+    uploadArea.style.display = 'none';
+    filePreview.style.display = 'block';
 }
 
-// Extract metadata dari header Tampermonkey
-function extractMetadata(code) {
+// Reset file
+function resetFile() {
+    ConverterState.currentFile = null;
+    
+    const uploadArea = document.getElementById('uploadArea');
+    const filePreview = document.getElementById('filePreview');
+    const fileInput = document.getElementById('fileUploadInput');
+    
+    uploadArea.style.display = 'block';
+    filePreview.style.display = 'none';
+    fileInput.value = '';
+    
+    PKM.log('File reset', 'info');
+}
+
+// Extract metadata from Tampermonkey script
+function extractMetadata() {
+    if (!ConverterState.currentFile) return;
+    
+    const code = ConverterState.currentFile.content;
     const metadata = {
-        name: 'Unnamed Module',
-        version: '1.0.0',
-        description: 'Converted from Tampermonkey script',
+        originalName: 'Unnamed Script',
+        originalVersion: '1.0.0',
+        description: 'No description',
         author: 'Unknown',
-        match: ['*://*/*']
+        match: CONVERTER_CONFIG.DEFAULT_MATCH.slice()
     };
     
-    // Parse @name
+    // Extract @name
     const nameMatch = code.match(/@name\s+(.+)/i);
-    if (nameMatch) metadata.name = nameMatch[1].trim();
+    if (nameMatch) metadata.originalName = nameMatch[1].trim();
     
-    // Parse @version
+    // Extract @version
     const versionMatch = code.match(/@version\s+(.+)/i);
-    if (versionMatch) metadata.version = versionMatch[1].trim();
+    if (versionMatch) metadata.originalVersion = versionMatch[1].trim();
     
-    // Parse @description
+    // Extract @description
     const descMatch = code.match(/@description\s+(.+)/i);
     if (descMatch) metadata.description = descMatch[1].trim();
     
-    // Parse @author
+    // Extract @author
     const authorMatch = code.match(/@author\s+(.+)/i);
     if (authorMatch) metadata.author = authorMatch[1].trim();
     
-    // Parse @match (bisa multiple)
+    // Extract @match (multiple)
     const matchMatches = code.match(/@match\s+(.+)/gi);
     if (matchMatches) {
-        metadata.match = matchMatches.map(m => m.replace(/@match\s+/i, '').trim());
+        metadata.match = matchMatches.map(m => 
+            m.replace(/@match\s+/i, '').trim()
+        );
     }
     
-    // Tampilkan metadata di UI
-    displayMetadata(metadata);
+    ConverterState.metadata = metadata;
     
-    return metadata;
+    // Populate form fields
+    document.getElementById('moduleName').value = 
+        metadata.originalName
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '');
+    
+    document.getElementById('moduleDisplayName').value = metadata.originalName;
+    document.getElementById('moduleDescription').value = metadata.description;
+    document.getElementById('moduleVersion').value = metadata.originalVersion;
+    document.getElementById('moduleAuthor').value = metadata.author;
+    
+    // Populate match patterns
+    const container = document.getElementById('matchPatternsContainer');
+    container.innerHTML = '';
+    metadata.match.forEach(pattern => addMatchPatternToUI(pattern));
+    
+    // Move to step 2
+    showStep(2);
+    updatePreview();
 }
 
-// Display metadata di UI
-function displayMetadata(metadata) {
-    const grid = document.getElementById('metadataGrid');
-    grid.innerHTML = '';
-    
-    const items = [
-        { label: 'Nama Module', value: metadata.name, icon: '📝' },
-        { label: 'Versi', value: metadata.version, icon: '🏷️' },
-        { label: 'Deskripsi', value: metadata.description, icon: '📋' },
-        { label: 'Author', value: metadata.author, icon: '👤' },
-        { label: 'Match Patterns', value: metadata.match.join('\n'), icon: '🌐' }
-    ];
-    
-    items.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'metadata-item';
-        div.innerHTML = `
-            <div class="metadata-label">${item.icon} ${item.label}</div>
-            <div class="metadata-value">${item.value}</div>
-        `;
-        grid.appendChild(div);
-    });
+// Add match pattern to UI
+function addMatchPattern(pattern = '') {
+    addMatchPatternToUI(pattern);
+    updatePreview();
 }
 
-// Proses konversi utama
-function processConversion() {
-    if (!currentFileData) {
-        alert('⚠️ Tidak ada file yang diupload!');
+function addMatchPatternToUI(pattern) {
+    const container = document.getElementById('matchPatternsContainer');
+    const patternId = `match-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    const patternDiv = document.createElement('div');
+    patternDiv.className = 'match-pattern';
+    patternDiv.innerHTML = `
+        <input type="text" class="form-control" value="${pattern}" 
+               placeholder="*://*.example.com/*" data-pattern-id="${patternId}"
+               oninput="updatePreview()">
+        <button type="button" class="remove-pattern-btn" onclick="removeMatchPattern('${patternId}')">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    container.appendChild(patternDiv);
+    
+    // Add event listener
+    patternDiv.querySelector('input').addEventListener('input', updatePreview);
+}
+
+// Remove match pattern
+function removeMatchPattern(patternId) {
+    const input = document.querySelector(`input[data-pattern-id="${patternId}"]`);
+    if (input && input.parentElement) {
+        input.parentElement.remove();
+        updatePreview();
+    }
+}
+
+// Process file (convert)
+function processFile() {
+    if (!ConverterState.currentFile || ConverterState.isProcessing) return;
+    
+    ConverterState.isProcessing = true;
+    PKM.log('Starting conversion process', 'info');
+    
+    // Move to step 2
+    showStep(2);
+}
+
+// Generate module from current data
+function generateModule() {
+    if (!ConverterState.currentFile) return;
+    
+    PKM.log('Generating module files', 'info');
+    
+    // Get form values
+    const moduleData = {
+        name: document.getElementById('moduleName').value.trim(),
+        displayName: document.getElementById('moduleDisplayName').value.trim(),
+        description: document.getElementById('moduleDescription').value.trim(),
+        version: document.getElementById('moduleVersion').value.trim(),
+        author: document.getElementById('moduleAuthor').value.trim(),
+        match: Array.from(document.querySelectorAll('#matchPatternsContainer input'))
+                   .map(input => input.value.trim())
+                   .filter(pattern => pattern.length > 0)
+    };
+    
+    // Validate
+    if (!moduleData.name) {
+        alert('❌ Nama module tidak boleh kosong');
         return;
     }
     
-    const metadata = extractMetadata(currentFileData.content);
-    const convertedCode = convertTampermonkeyToModule(currentFileData.content, metadata);
-    const jsonEntry = generateJsonEntry(metadata);
+    if (moduleData.match.length === 0) {
+        moduleData.match = CONVERTER_CONFIG.DEFAULT_MATCH;
+    }
     
-    conversionResult = {
-        moduleCode: convertedCode,
-        jsonEntry: jsonEntry,
-        metadata: metadata
-    };
+    // Convert code
+    const convertedCode = convertCode(ConverterState.currentFile.content, moduleData);
+    const jsonEntry = generateJsonEntry(moduleData);
     
-    // Tampilkan hasil
-    document.getElementById('moduleCode').textContent = convertedCode;
-    document.getElementById('jsonEntry').textContent = jsonEntry;
+    // Save to state
+    ConverterState.convertedCode = convertedCode;
+    ConverterState.jsonEntry = jsonEntry;
+    ConverterState.moduleData = moduleData;
     
-    // Pindah ke step 3
+    // Show results
+    document.getElementById('moduleCodeResult').textContent = 
+        convertedCode.substring(0, 500) + 
+        (convertedCode.length > 500 ? '\n\n... [truncated for preview]' : '');
+    
+    document.getElementById('jsonEntryResult').textContent = jsonEntry;
+    
+    // Move to step 3
     showStep(3);
+    
+    PKM.log(`Module generated: ${moduleData.name} v${moduleData.version}`, 'success');
 }
 
-// Convert Tampermonkey script ke module format
-function convertTampermonkeyToModule(code, metadata) {
-    // Hapus header block
-    let cleaned = code.replace(/\/\/ ==UserScript==[\s\S]*?\/\/ ==\/UserScript==/g, '');
+// Convert Tampermonkey code to module format
+function convertCode(originalCode, moduleData) {
+    let code = originalCode;
     
-    // Hapus wrapper function (function() { 'use strict'; ... })();
-    cleaned = cleaned.replace(/\(\s*function\s*\(\s*\)\s*\{[\s\S]*?['"]use strict['"][\s\S]*?\}\s*\)\s*\(\s*\)\s*;?/g, '');
+    // 1. Remove Tampermonkey header
+    code = code.replace(/\/\/ ==UserScript==[\s\S]*?\/\/ ==\/UserScript==/g, '');
     
-    // Hapus sisa wrapper jika ada
-    cleaned = cleaned.replace(/\(\s*function\s*\(\s*\)\s*\{[\s\S]*?\}\s*\)\s*\(\s*\)\s*;?/g, '');
+    // 2. Remove wrapper function
+    code = code.replace(/\(\s*function\s*\(\s*\)\s*\{[\s\S]*?['"]use strict['"][\s\S]*?\}\s*\)\s*\(\s*\)\s*;?/g, '');
+    code = code.replace(/\(\s*function\s*\(\s*\)\s*\{[\s\S]*?\}\s*\)\s*\(\s*\)\s*;?/g, '');
     
-    // Konversi GM_ functions ke PKM.*
+    // 3. Convert GM_* functions to PKM.*
     const replacements = [
-        { from: /\bGM_getValue\b/g, to: 'PKM.storage.get' },
-        { from: /\bGM_setValue\b/g, to: 'PKM.storage.set' },
-        { from: /\bGM_deleteValue\b/g, to: 'PKM.storage.set' }, // Set null untuk delete
-        { from: /\bGM_notification\b/g, to: '// PKM: GM_notification tidak tersedia di module' },
-        { from: /\bGM_xmlhttpRequest\b/g, to: '// PKM: Gunakan fetch() API' }
+        { pattern: /\bGM_getValue\b/g, replacement: 'PKM.storage.get' },
+        { pattern: /\bGM_setValue\b/g, replacement: 'PKM.storage.set' },
+        { pattern: /\bGM_deleteValue\b/g, replacement: 'PKM.storage.set' },
+        { pattern: /\bGM_notification\b/g, replacement: '// PKM: GM_notification tidak tersedia di module' },
+        { pattern: /\bGM_xmlhttpRequest\b/g, replacement: '// PKM: Gunakan fetch() API' },
+        { pattern: /\bGM_addStyle\b/g, replacement: '// PKM: Gunakan inline style atau CSS file' },
+        { pattern: /\bGM_registerMenuCommand\b/g, replacement: '// PKM: Gunakan dashboard untuk controls' }
     ];
     
-    replacements.forEach(rep => {
-        cleaned = cleaned.replace(rep.from, rep.to);
+    replacements.forEach(({ pattern, replacement }) => {
+        code = code.replace(pattern, replacement);
     });
     
-    // Tambahkan module wrapper
-    const moduleCode = `// Module: ${metadata.name}
-// Converted by PKM Kedawung Converter
-// Original: ${metadata.name} v${metadata.version}
-
-PKM.log('${metadata.name} loaded', 'info');
-
-// MODULE CODE START
-${cleaned.trim()}
-// MODULE CODE END
-
-// Auto-initialization
-function initModule() {
-    // Module initialization logic
-    PKM.log('${metadata.name} initialized', 'success');
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initModule);
-} else {
-    setTimeout(initModule, 100);
-}
-
-PKM.log('${metadata.name} ready', 'success');`;
+    // 4. Add module wrapper
+    const templateVars = {
+        name: moduleData.displayName,
+        originalName: ConverterState.metadata?.originalName || moduleData.displayName,
+        originalVersion: ConverterState.metadata?.originalVersion || moduleData.version,
+        converterVersion: CONVERTER_CONFIG.VERSION,
+        date: new Date().toISOString()
+    };
     
-    return moduleCode;
+    const header = CONVERTER_CONFIG.TEMPLATE.header.replace(
+        /\{(\w+)\}/g, 
+        (match, key) => templateVars[key] || match
+    );
+    
+    const footer = CONVERTER_CONFIG.TEMPLATE.footer.replace(
+        /\{(\w+)\}/g, 
+        (match, key) => templateVars[key] || match
+    );
+    
+    return `${header}\n${code.trim()}\n${footer}`;
 }
 
-// Generate JSON entry untuk modules.json
-function generateJsonEntry(metadata) {
-    const moduleId = metadata.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
-    
+// Generate JSON entry for modules.json
+function generateJsonEntry(moduleData) {
     const entry = {
-        [moduleId]: {
-            name: metadata.name,
-            description: metadata.description,
-            version: metadata.version,
-            author: metadata.author,
-            match: metadata.match
+        [moduleData.name]: {
+            name: moduleData.displayName,
+            description: moduleData.description,
+            version: moduleData.version,
+            author: moduleData.author,
+            match: moduleData.match
         }
     };
     
     return JSON.stringify(entry, null, 2);
 }
 
+// Update live preview
+function updatePreview() {
+    if (!ConverterState.currentFile) return;
+    
+    const moduleData = {
+        name: document.getElementById('moduleName').value.trim() || 'module-name',
+        displayName: document.getElementById('moduleDisplayName').value.trim() || 'Module Name',
+        description: document.getElementById('moduleDescription').value.trim() || 'Module description',
+        version: document.getElementById('moduleVersion').value.trim() || '1.0.0',
+        author: document.getElementById('moduleAuthor').value.trim() || 'Author',
+        match: Array.from(document.querySelectorAll('#matchPatternsContainer input'))
+                   .map(input => input.value.trim())
+                   .filter(pattern => pattern.length > 0)
+    };
+    
+    if (moduleData.match.length === 0) {
+        moduleData.match = CONVERTER_CONFIG.DEFAULT_MATCH;
+    }
+    
+    const jsonPreview = generateJsonEntry(moduleData);
+    const codePreview = convertCode(ConverterState.currentFile.content, moduleData);
+    
+    document.getElementById('jsonEntryResult').textContent = jsonPreview;
+    document.getElementById('codePreview').textContent = 
+        codePreview.substring(0, 300) + 
+        (codePreview.length > 300 ? '\n\n... [preview truncated]' : '');
+}
+
+// ==================== DOWNLOAD FUNCTIONS ====================
+
 // Download module file
 function downloadModuleFile() {
-    if (!conversionResult) return;
+    if (!ConverterState.convertedCode) {
+        alert('❌ Tidak ada module yang tersedia untuk di-download');
+        return;
+    }
     
-    const blob = new Blob([conversionResult.moduleCode], { type: 'text/javascript' });
+    const blob = new Blob([ConverterState.convertedCode], { type: 'text/javascript' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     
-    const filename = conversionResult.metadata.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '') + '.js';
-    
+    const filename = ConverterState.moduleData.name + '.js';
     a.href = url;
     a.download = filename;
+    
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    PKM.log(`Module file downloaded: ${filename}`, 'success');
+    PKM.log(`Module downloaded: ${filename}`, 'success');
+    alert(`✅ Module berhasil di-download: ${filename}`);
 }
 
 // Download JSON file
 function downloadJsonFile() {
-    if (!conversionResult) return;
+    if (!ConverterState.jsonEntry) {
+        alert('❌ Tidak ada JSON entry yang tersedia');
+        return;
+    }
     
-    const blob = new Blob([conversionResult.jsonEntry], { type: 'application/json' });
+    const blob = new Blob([ConverterState.jsonEntry], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     
-    const moduleId = conversionResult.metadata.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
-    
+    const filename = ConverterState.moduleData.name + '-entry.json';
     a.href = url;
-    a.download = `${moduleId}-entry.json`;
+    a.download = filename;
+    
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    PKM.log(`JSON entry downloaded for module: ${moduleId}`, 'success');
+    PKM.log(`JSON entry downloaded: ${filename}`, 'success');
 }
 
 // Copy JSON to clipboard
 function copyJsonToClipboard() {
-    if (!conversionResult) return;
+    if (!ConverterState.jsonEntry) {
+        alert('❌ Tidak ada JSON entry untuk disalin');
+        return;
+    }
     
-    navigator.clipboard.writeText(conversionResult.jsonEntry).then(() => {
-        alert('✅ Entry JSON berhasil disalin ke clipboard!');
-    }).catch(err => {
-        console.error('Failed to copy:', err);
-        alert('❌ Gagal menyalin ke clipboard');
+    navigator.clipboard.writeText(ConverterState.jsonEntry)
+        .then(() => {
+            alert('✅ JSON entry berhasil disalin ke clipboard!');
+            PKM.log('JSON entry copied to clipboard', 'success');
+        })
+        .catch(err => {
+            console.error('Copy failed:', err);
+            alert('❌ Gagal menyalin ke clipboard');
+            PKM.log('Clipboard copy failed', 'error');
+        });
+}
+
+// ==================== UI FUNCTIONS ====================
+
+// Show specific step
+function showStep(step) {
+    currentStep = step;
+    
+    // Hide all steps
+    document.querySelectorAll('.converter-step').forEach(el => {
+        el.style.display = 'none';
     });
+    
+    // Show current step
+    const currentStepEl = document.querySelector(`.step-${step}`);
+    if (currentStepEl) {
+        currentStepEl.style.display = 'block';
+    }
+    
+    // Update progress indicator
+    document.querySelectorAll('.progress-step').forEach((stepEl, index) => {
+        if (index + 1 <= step) {
+            stepEl.classList.add('active');
+        } else {
+            stepEl.classList.remove('active');
+        }
+    });
+    
+    PKM.log(`Converter step ${step} shown`, 'info');
 }
 
 // Start new conversion
 function startNewConversion() {
-    currentFileData = null;
-    conversionResult = null;
-    document.getElementById('fileInput').value = '';
+    ConverterState.currentFile = null;
+    ConverterState.metadata = null;
+    ConverterState.convertedCode = null;
+    ConverterState.jsonEntry = null;
+    ConverterState.isProcessing = false;
+    
+    // Reset form
+    document.getElementById('fileUploadInput').value = '';
+    document.getElementById('uploadArea').style.display = 'block';
+    document.getElementById('filePreview').style.display = 'none';
+    
     showStep(1);
+    PKM.log('New conversion started', 'info');
 }
 
-// Show specific step
-function showStep(stepNumber) {
-    // Hide all steps
-    document.querySelectorAll('.converter-step').forEach(step => {
-        step.style.display = 'none';
-    });
-    
-    // Show target step
-    document.getElementById(`step${stepNumber}`).style.display = 'block';
-    
-    // Update progress dots
-    document.querySelectorAll('.progress-dot').forEach((dot, index) => {
-        if (index + 1 <= stepNumber) {
-            dot.classList.add('active');
-        } else {
-            dot.classList.remove('active');
-        }
-    });
+// Close converter
+function closeConverter() {
+    if (converterModal) {
+        converterModal.remove();
+        converterModal = null;
+    }
+    PKM.log('Converter closed', 'info');
 }
 
-// Initialize converter tool
+// ==================== INITIALIZATION ====================
+
+// Initialize converter on module load
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initConverterTool);
+    document.addEventListener('DOMContentLoaded', initConverter);
 } else {
-    initConverterTool();
+    // Small delay to ensure PKM is available
+    setTimeout(initConverter, 300);
 }
 
-PKM.log('Module Converter Tool initialized', 'success');
+PKM.log('Module Converter Tool initialized successfully', 'success');
