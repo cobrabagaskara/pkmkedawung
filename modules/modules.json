@@ -51,7 +51,19 @@
         "version": "3.0.0",
         "author": "Dokter Anggi",
         "match": ["https://cirebon.epuskesmas.id/skriningfaktorrisiko/create/*"]
-     }
+     },
+
+        
+     "otomasi-skrining-kekerasan-perempuan-wast-dokter-anggi": {
+        "name": "Skrining Kekerasan Perempuan (WAST) - Dokter Anggi",
+        "description": "Otomasi pengisian form skrining kekerasan pada perempuan (Woman Abuse Screening Tools)",
+        "version": "1.0",
+        "author": "You",
+        "match": [
+          "https://cirebon.epuskesmas.id/skrining/kekerasanperempuan/create/*"
+        ]
+      }
+
 
 
 
