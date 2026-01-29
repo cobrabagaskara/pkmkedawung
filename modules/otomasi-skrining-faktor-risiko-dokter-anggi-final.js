@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Otomasi Skrining Faktor Risiko - Dokter Anggi (FINAL)
 // @namespace    https://cirebon.epuskesmas.id
-// @version      3.0
+// @version      3.1
 // @description  Otomasi pengisian form skrining faktor risiko - Data terbaru dari recording
 // @author       You
 // @match        https://cirebon.epuskesmas.id/skriningfaktorrisiko/create/*
