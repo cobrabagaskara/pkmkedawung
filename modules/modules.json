@@ -73,8 +73,18 @@
     "match": [
       "https://www.google.com/*"
     ]
-  }
+  },
 
+
+  "otomasi-skrining-faktor-risiko-dokter-anggi-final": {
+    "name": "Otomasi Skrining Faktor Risiko - Dokter Anggi (FINAL)",
+    "description": "Otomasi pengisian form skrining faktor risiko - Data terbaru dari recording",
+    "version": "3.0",
+    "author": "You",
+    "match": [
+      "https://cirebon.epuskesmas.id/skriningfaktorrisiko/create/*"
+    ]
+  }
 
 
 
