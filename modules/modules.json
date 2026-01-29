@@ -62,7 +62,19 @@
         "match": [
           "https://cirebon.epuskesmas.id/skrining/kekerasanperempuan/create/*"
         ]
-      }
+      },
+
+        
+  "test-simple-script-pkm-converter": {
+    "name": "Test Simple Script - PKM Converter",
+    "description": "Script sederhana untuk testing converter",
+    "version": "1.0.0",
+    "author": "PKM Kedawung",
+    "match": [
+      "https://www.google.com/*"
+    ]
+  }
+
 
 
 
