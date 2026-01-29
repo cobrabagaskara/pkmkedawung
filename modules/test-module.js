@@ -1,32 +1,72 @@
-// ============================================
-// Test Module
-// Menampilkan pesan sederhana di console
-// ============================================
+// Module: Test Module
+// File: test-module.js
+// Description: Contoh module untuk testing sistem modular
 
-(function() {
-    'use strict';
+PKM.log('Test Module di-load!', 'info');
 
-    // Pesan sederhana
-    console.log('halo, saya disini');
+// Contoh: Tambah tombol di halaman
+if (document.body) {
+    const testButton = document.createElement('button');
+    testButton.textContent = '🔄 Test Module';
+    testButton.style.cssText = `
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        padding: 10px 15px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 99999;
+    `;
+    
+    testButton.addEventListener('click', () => {
+        PKM.log('Tombol test diklik!', 'success');
+        alert('Test Module bekerja dengan baik!');
+    });
+    
+    document.body.appendChild(testButton);
+    PKM.log('Tombol test ditambahkan', 'success');
+}
 
-    // Info tambahan
-    console.log('[PKM-Test] Module test-module berhasil di-load!');
-    console.log('[PKM-Test] URL saat ini:', window.location.href);
+// Contoh: Simpan data ke storage
+PKM.storage.set('last_visit', new Date().toISOString());
+const lastVisit = PKM.storage.get('last_visit');
+PKM.log(`Last visit: ${lastVisit}`, 'info');
 
-    // Tambahkan timestamp
-    const now = new Date();
-    console.log('[PKM-Test] Timestamp:', now.toLocaleString('id-ID'));
+// Contoh: Utility function
+async function waitAndModify() {
+    try {
+        // Tunggu element tertentu muncul
+        const header = await PKM.utils.waitForElement('h1, h2, h3', 5000);
+        header.style.color = '#667eea';
+        PKM.log('Header dimodifikasi', 'success');
+    } catch (error) {
+        PKM.log('Element tidak ditemukan', 'warn');
+    }
+}
 
-    // modules/test-module.js
-console.log("Test Module Loaded");
+// Jalankan setelah delay
+setTimeout(waitAndModify, 2000);
 
-// Cek versi dari localStorage
-const currentVersion = localStorage.getItem('pkmkedawung_version');
-console.log(`Running PKMKedawung v${currentVersion || 'unknown'}`);
+// Module function yang bisa dipanggil dari luar
+window.testModuleFunction = function() {
+    return {
+        message: 'Hello dari Test Module!',
+        version: PKM.version,
+        timestamp: new Date().toISOString()
+    };
+};
 
-// Listen untuk custom event jika loader mendeteksi update
-document.addEventListener('pkmkedawung_update', function(e) {
-    console.log(`Update detected to v${e.detail.version}`);
-    // Tambahkan logika modul spesifik di sini
+// Event listener untuk komunikasi antar module
+document.addEventListener('pkm:module-loaded', (event) => {
+    if (event.detail.moduleId !== PKM.id) {
+        PKM.log(`Module lain di-load: ${event.detail.moduleId}`, 'info');
+    }
 });
-})();
+
+// Export module info
+PKM.log('Test Module siap digunakan!', 'success');
