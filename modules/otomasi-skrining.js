@@ -1,6 +1,6 @@
 // Module: Otomasi Skrining Faktor Risiko
 // File: modules/otomasi-skrining-faktor-risiko.js
-// Deskripsi: Otomasi pengisian form skrining faktor risiko
+// Deskripsi: Otomasi pengisian form skrining faktor risiko nih
 
 PKM.log('Otomasi Skrining Faktor Risiko Module loaded', 'info');
 
