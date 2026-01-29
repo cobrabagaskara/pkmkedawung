@@ -1,0 +1,32 @@
+{
+    "modules": {
+        "test-module": {
+            "name": "Test Module",
+            "description": "Module untuk testing sistem",
+            "version": "1.0.0",
+            "author": "cobrabagaskara",
+            "match": ["*://*/*"]
+        },
+        "youtube-tools": {
+            "name": "YouTube Tools",
+            "description": "Fitur tambahan untuk YouTube",
+            "version": "1.0.0",
+            "author": "cobrabagaskara",
+            "match": ["*://www.youtube.com/*", "*://youtube.com/*"]
+        },
+        "google-enhancer": {
+            "name": "Google Enhancer",
+            "description": "Perbaikan UI untuk Google Search",
+            "version": "1.0.0",
+            "author": "cobrabagaskara",
+            "match": ["*://www.google.com/*", "*://google.com/*"]
+        },
+        "ui-improvements": {
+            "name": "General UI Improvements",
+            "description": "Perbaikan UI umum untuk semua website",
+            "version": "1.0.0",
+            "author": "cobrabagaskara",
+            "match": ["*://*/*"]
+        }
+    }
+}
