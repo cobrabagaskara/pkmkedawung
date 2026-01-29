@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PKMKedawung - Enhanced Loader
 // @namespace    https://github.com/cobrabagaskara/pkmkedawung
-// @version      1.2.0
+// @version      1.2.1
 // @description  Loader canggih dengan sistem notifikasi update, logging, dan kontrol manual
 // @author       cobrabagaskara
 // @match        *://*/*
