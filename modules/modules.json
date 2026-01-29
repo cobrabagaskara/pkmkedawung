@@ -69,6 +69,15 @@
             "version": "1.0",
             "author": "You",
             "match": ["https://cirebon.epuskesmas.id/skriningobesitas/create/*"]
-        }
+        },
+        "otomasi-skrining-hipertensi-dokter-anggi": {
+  "name": "Otomasi Skrining Hipertensi - Dokter Anggi",
+  "description": "Otomasi pengisian form skrining hipertensi - Data terbaru dari recording",
+  "version": "1.0",
+  "author": "You",
+  "match": [
+    "https://cirebon.epuskesmas.id/skrininghipertensi/create/*"
+  ]
+}
     }
 }
