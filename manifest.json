@@ -1,20 +1,9 @@
 {
-  "name": "PKM Kedawung Automation Suite",
-  "version": "8.1",
-  "description": "Kumpulan script otomatisasi untuk PKM Kedawung",
-  "author": "cobrabagaskara",
-  "lastUpdated": "2026-01-28",
-  "autoUpdate": true,
-  "updateInterval": 3600000,
-  "modules": [
-    {
-      "id": "test-module",
-      "name": "Test Module",
-      "description": "Module testing - menampilkan pesan di console",
-      "file": "modules/test-module.js",
-      "enabled": true,
-      "match": []
-    }
-  ],
-  "dependencies": {}
+    "manifest_version": 3,
+    "name": "PKMKedawung Modular System",
+    "version": "3.0.0",
+    "description": "Sistem modular loader untuk userscript",
+    "author": "cobrabagaskara",
+    "repository": "https://github.com/cobrabagaskara/pkmkedawung",
+    "license": "MIT"
 }
