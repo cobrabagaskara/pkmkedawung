@@ -6,7 +6,7 @@ PKM.log('Converter Solid Edition loaded', 'info');
 
 // ==================== CORE CONVERSION ENGINE ====================
 const PKMConverter = {
-    VERSION: '1.0.0',
+    VERSION: '1.0.1',
     
     // ========== CONFIGURATION ==========
     CONFIG: {
