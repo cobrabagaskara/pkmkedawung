@@ -15,6 +15,15 @@
             "author": "PKM Kedawung",
             "match": ["*://*/*"]
         },
+        "auto-fill-skrining-risiko-kanker-serviks": {
+              "name": "Auto Fill Skrining Risiko Kanker Serviks",
+              "description": "Auto-fill Skrining Risiko Kanker Serviks dengan validasi gender & usia (Hanya untuk Perempuan ≥30 tahun)",
+              "version": "1.0",
+              "author": "You",
+              "match": [
+                "https://cirebon.epuskesmas.id/risikokankerserviks/create/*"
+              ]
+            }
         
     }
 }
