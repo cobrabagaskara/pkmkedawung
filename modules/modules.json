@@ -13,7 +13,7 @@
             "description": "Konverter script Tampermonkey ke format module PKM",
             "version": "1.0.0",
             "author": "PKM Kedawung",
-            "match": ["https://www.google.com/*"]
+            "match": ["https://www.google.com"]
         },
         "auto-fill-skrining-risiko-kanker-serviks": {
               "name": "Auto Fill Skrining Risiko Kanker Serviks",
