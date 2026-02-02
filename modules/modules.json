@@ -8,13 +8,6 @@
             "match": ["*://*/*"]
         },
         
-        "converter-tool": {
-            "name": "Tampermonkey Converter",
-            "description": "Konverter script Tampermonkey ke format module PKM",
-            "version": "1.0.0",
-            "author": "PKM Kedawung",
-            "match": ["https://cirebon.epuskesmas.id/risikokankerserviks/create/*"]
-        },
         "auto-fill-skrining-risiko-kanker-serviks": {
               "name": "Auto Fill Skrining Risiko Kanker Serviks",
               "description": "Auto-fill Skrining Risiko Kanker Serviks dengan validasi gender & usia (Hanya untuk Perempuan ≥30 tahun)",
