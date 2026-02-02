@@ -7,6 +7,13 @@
             "author": "cobrabagaskara",
             "match": ["*://*/*"]
         },
+        "test-simple-fixed": {
+    "name": "Test Simple Fixed",
+    "description": "Test module untuk loader solid edition",
+    "version": "1.0.0",
+    "author": "PKM Kedawung",
+    "match": ["*://*/*"]
+},
         
         "auto-fill-skrining-risiko-kanker-serviks": {
               "name": "Auto Fill Skrining Risiko Kanker Serviks",
