@@ -7,27 +7,7 @@
             "author": "cobrabagaskara",
             "match": ["*://*/*"]
         },
-        "youtube-tools": {
-            "name": "YouTube Tools",
-            "description": "Fitur tambahan untuk YouTube",
-            "version": "1.0.0",
-            "author": "cobrabagaskara",
-            "match": ["*://www.youtube.com/*", "*://youtube.com/*"]
-        },
-        "google-enhancer": {
-            "name": "Google Enhancer",
-            "description": "Perbaikan UI untuk Google Search",
-            "version": "1.0.0",
-            "author": "cobrabagaskara",
-            "match": ["*://www.google.com/*", "*://google.com/*"]
-        },
-        "ui-improvements": {
-            "name": "General UI Improvements",
-            "description": "Perbaikan UI umum untuk semua website",
-            "version": "1.0.0",
-            "author": "cobrabagaskara",
-            "match": ["*://*/*"]
-        },
+        
         "converter-tool": {
             "name": "Tampermonkey Converter",
             "description": "Konverter script Tampermonkey ke format module PKM",
@@ -35,49 +15,6 @@
             "author": "PKM Kedawung",
             "match": ["*://*/*"]
         },
-        "otomasi-skrining": {
-            "name": "Otomasi Skrining Faktor Risiko",
-            "description": "Otomasi pengisian form skrining faktor risiko",
-            "version": "3.0.0",
-            "author": "Dokter Anggi",
-            "match": ["https://cirebon.epuskesmas.id/skriningfaktorrisiko/create/*"]
-        },
-        "otomasi-skrining-kekerasan-perempuan-wast-dokter-anggi": {
-            "name": "Skrining Kekerasan Perempuan (WAST) - Dokter Anggi",
-            "description": "Otomasi pengisian form skrining kekerasan pada perempuan (Woman Abuse Screening Tools)",
-            "version": "1.0",
-            "author": "You",
-            "match": ["https://cirebon.epuskesmas.id/skrining/kekerasanperempuan/create/*"]
-        },
-        "test-simple-script-pkm-converter": {
-            "name": "Test Simple Script - PKM Converter",
-            "description": "Script sederhana untuk testing converter",
-            "version": "1.0.0",
-            "author": "PKM Kedawung",
-            "match": ["https://www.google.com/*"]
-        },
-        "otomasi-skrining-diabetes-melitus-dokter-anggi": {
-            "name": "Otomasi Skrining Diabetes Melitus - Dokter Anggi",
-            "description": "Otomasi pengisian form skrining diabetes melitus - Data terbaru dari recording",
-            "version": "1.0",
-            "author": "You",
-            "match": ["https://cirebon.epuskesmas.id/skriningdiabetesmelitus/create/*"]
-        },
-        "otomasi-skrining-obesitas-dokter-anggi": {
-            "name": "Otomasi Skrining Obesitas - Dokter Anggi",
-            "description": "Otomasi pengisian form skrining obesitas - Data terbaru dari recording",
-            "version": "1.0",
-            "author": "You",
-            "match": ["https://cirebon.epuskesmas.id/skriningobesitas/create/*"]
-        },
-        "otomasi-skrining-hipertensi-dokter-anggi": {
-  "name": "Otomasi Skrining Hipertensi - Dokter Anggi",
-  "description": "Otomasi pengisian form skrining hipertensi - Data terbaru dari recording",
-  "version": "1.0",
-  "author": "You",
-  "match": [
-    "https://cirebon.epuskesmas.id/skrininghipertensi/create/*"
-  ]
-}
+        
     }
 }
