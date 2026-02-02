@@ -23,6 +23,17 @@
               "match": [
                 "https://cirebon.epuskesmas.id/risikokankerserviks/create/*"
               ]
+            },
+        "converter-tool-solid": {
+                "name": "PKM Converter - Solid Edition",
+                "description": "Converter akurat untuk konversi script Tampermonkey ke module PKM",
+                "version": "1.0.0",
+                "author": "PKM Kedawung",
+                "match": [
+                    "https://www.google.com/*",
+                    "https://github.com/*",
+                    "https://stackoverflow.com/*"
+                ]
             }
         
     }
