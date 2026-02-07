@@ -1,1 +1,60 @@
-nanti
+
+---
+
+### **7. server/config/categories.json**
+
+```json
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-07",
+  "categories": [
+    {
+      "id": "general-screening",
+      "name": "🏥 Skrining Kesehatan Umum",
+      "description": "Skrining untuk kondisi kesehatan umum tanpa batasan usia/gender",
+      "icon": "🩺",
+      "order": 1,
+      "color": "#4CAF50"
+    },
+    {
+      "id": "elderly-screening",
+      "name": "👵 Skrining Lansia (≥60 tahun)",
+      "description": "Skrining khusus untuk lansia usia 60 tahun ke atas",
+      "icon": "🦽",
+      "order": 2,
+      "color": "#2196F3"
+    },
+    {
+      "id": "mental-health",
+      "name": "🧠 Skrining Jiwa & Mental",
+      "description": "Skrining kesehatan jiwa dan mental",
+      "icon": "💭",
+      "order": 3,
+      "color": "#9C27B0"
+    },
+    {
+      "id": "maternal-child",
+      "name": "👶 Skrining Ibu & Anak",
+      "description": "Skrining kesehatan ibu hamil dan anak",
+      "icon": "🤱",
+      "order": 4,
+      "color": "#FF5722"
+    },
+    {
+      "id": "special-screening",
+      "name": "⚠️ Skrining Khusus",
+      "description": "Skrining untuk kondisi khusus (kanker, TBC, PPOK, dll)",
+      "icon": "🔬",
+      "order": 5,
+      "color": "#FF9800"
+    },
+    {
+      "id": "utilities",
+      "name": "⚙️ Utilities & Pengaturan",
+      "description": "Tools dan pengaturan sistem",
+      "icon": "🔧",
+      "order": 6,
+      "color": "#607D8B"
+    }
+  ]
+}
