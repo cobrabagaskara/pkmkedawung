@@ -131,64 +131,74 @@
     }
     
     openDashboard() {
-      // Create modal overlay
-      const overlay = document.createElement('div');
-      overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 999999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(5px);
-      `;
-      
-      // Create iframe container
-      const iframeContainer = document.createElement('div');
-      iframeContainer.style.cssText = `
-        width: 95%;
-        height: 90%;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        overflow: hidden;
-        position: relative;
-      `;
-      
-      // Create iframe
-      const iframe = document.createElement('iframe');
-      iframe.src = CONFIG.SERVER_URL + 'server/dashboard/';
-      iframe.style.cssText = `
-        width: 100%;
-        height: 100%;
-        border: none;
-      `;
-      
-      iframeContainer.appendChild(iframe);
-      overlay.appendChild(iframeContainer);
-      
-      // Close on click outside
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-          overlay.remove();
-        }
-      });
-      
-      // Close on Escape key
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          overlay.remove();
-        }
-      }, { once: true });
-      
-      document.body.appendChild(overlay);
-      
-      Logger.log('Dashboard opened');
+  // Create modal overlay
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+  `;
+
+  // Create iframe container
+  const iframeContainer = document.createElement('div');
+  iframeContainer.style.cssText = `
+    width: 95%;
+    height: 90%;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    position: relative;
+  `;
+
+  // Create iframe
+  const iframe = document.createElement('iframe');
+  iframe.src = CONFIG.SERVER_URL + 'server/dashboard/';
+  iframe.style.cssText = `
+    width: 100%;
+    height: 100%;
+    border: none;
+  `;
+
+  iframeContainer.appendChild(iframe);
+  overlay.appendChild(iframeContainer);
+
+  // Close on click outside
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
     }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      overlay.remove();
+    }
+  }, { once: true });
+
+  // ✅ TAMBAHKAN INI: Event listener untuk pesan 'close' dari iframe
+  const closeHandler = (event) => {
+    if (event.data === 'close') {
+      overlay.remove();
+      window.removeEventListener('message', closeHandler);
+    }
+  };
+
+  window.addEventListener('message', closeHandler);
+
+  document.body.appendChild(overlay);
+
+  Logger.log('Dashboard opened');
+}
     
     setupAutoUpdate() {
       // Check for updates every hour
