@@ -1,0 +1,73 @@
+/* =============================================================================
+   Print Styles - Untuk cetak laporan/modul
+   ============================================================================= */
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .dashboard-header,
+  .theme-switcher-container,
+  .btn-run,
+  .search-container,
+  #category-filter,
+  .btn-primary:not([onclick*="close"]) {
+    display: none !important;
+  }
+  
+  .dashboard {
+    max-width: 100% !important;
+    padding: 20px !important;
+  }
+  
+  .category-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    margin-bottom: 30px !important;
+  }
+  
+  .category-header {
+    background: #f5f5f5 !important;
+    padding: 15px !important;
+  }
+  
+  .category-modules {
+    max-height: none !important;
+    display: block !important;
+  }
+  
+  .module-item {
+    border-bottom: 1px solid #ddd !important;
+    padding: 12px !important;
+  }
+  
+  .stat-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  
+  .stat-icon {
+    background: #e0e0e0 !important;
+    color: #666 !important;
+  }
+  
+  a {
+    color: #0066cc !important;
+    text-decoration: underline !important;
+  }
+  
+  h1, h2, h3 {
+    color: #333 !important;
+  }
+  
+  /* Force page breaks between categories */
+  .category-card:nth-child(3n) {
+    break-after: page;
+    page-break-after: always;
+  }
+}
