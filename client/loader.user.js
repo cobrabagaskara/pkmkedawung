@@ -4,8 +4,7 @@
 // @version      1.0.0
 // @description  Sistem otomasi skrining kesehatan modular untuk Puskesmas Kedawung
 // @author       Bagas Kurniawan
-// @match        https://e-puskesmas.cirebonkab.go.id/*
-// @match        http://e-puskesmas.cirebonkab.go.id/*
+// @match        https://cirebon.epuskesmas.id/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
