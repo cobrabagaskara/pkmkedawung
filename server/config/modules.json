@@ -1,0 +1,184 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-07",
+  "modules": [
+    {
+      "id": "faktor-risiko",
+      "name": "Faktor Risiko",
+      "description": "19 field skrining faktor risiko",
+      "category": "general-screening",
+      "condition": "none",
+      "file": "screening/faktor-risiko.js",
+      "version": "1.0.0",
+      "fields": 19
+    },
+    {
+      "id": "diabetes-melitus",
+      "name": "Diabetes Melitus",
+      "description": "13 field skrining diabetes",
+      "category": "general-screening",
+      "condition": "none",
+      "file": "screening/diabetes-melitus.js",
+      "version": "1.0.0",
+      "fields": 13
+    },
+    {
+      "id": "hipertensi",
+      "name": "Hipertensi",
+      "description": "8 field skrining hipertensi",
+      "category": "general-screening",
+      "condition": "none",
+      "file": "screening/hipertensi.js",
+      "version": "1.0.0",
+      "fields": 8
+    },
+    {
+      "id": "phq-4",
+      "name": "PHQ-4",
+      "description": "4 field skrining depresi & kecemasan",
+      "category": "mental-health",
+      "condition": "none",
+      "file": "screening/phq-4.js",
+      "version": "1.0.0",
+      "fields": 4
+    },
+    {
+      "id": "srq-29",
+      "name": "SRQ-29",
+      "description": "29 field skrining kesehatan jiwa",
+      "category": "mental-health",
+      "condition": "none",
+      "file": "screening/srq-29.js",
+      "version": "1.0.0",
+      "fields": 29
+    },
+    {
+      "id": "skilas",
+      "name": "SKILAS",
+      "description": "Skrining lansia (error jika <60 tahun)",
+      "category": "elderly-screening",
+      "condition": "age_min_60",
+      "file": "screening/skilas.js",
+      "version": "1.0.0",
+      "minAge": 60
+    },
+    {
+      "id": "gds-4",
+      "name": "GDS-4",
+      "description": "Skrining depresi lansia (error jika <60 tahun)",
+      "category": "elderly-screening",
+      "condition": "age_min_60",
+      "file": "screening/gds-4.js",
+      "version": "1.0.0",
+      "minAge": 60
+    },
+    {
+      "id": "ad-8-ina",
+      "name": "AD-8 INA",
+      "description": "Skrining demensia (error jika <60 tahun)",
+      "category": "elderly-screening",
+      "condition": "age_min_60",
+      "file": "screening/ad-8-ina.js",
+      "version": "1.0.0",
+      "minAge": 60
+    },
+    {
+      "id": "short-form-mna",
+      "name": "Short-Form MNA",
+      "description": "Skrining nutrisi lansia (error jika <60 tahun)",
+      "category": "elderly-screening",
+      "condition": "age_min_60",
+      "file": "screening/short-form-mna.js",
+      "version": "1.0.0",
+      "minAge": 60
+    },
+    {
+      "id": "gigi-lansia",
+      "name": "Gigi Lansia",
+      "description": "Skrining kesehatan gigi lansia (error jika <60 tahun)",
+      "category": "elderly-screening",
+      "condition": "age_min_60",
+      "file": "screening/gigi-lansia.js",
+      "version": "1.0.0",
+      "minAge": 60
+    },
+    {
+      "id": "layak-hamil",
+      "name": "Layak Hamil",
+      "description": "4 template berdasarkan usia (≤20, 21-25, 26-37, >37)",
+      "category": "maternal-child",
+      "condition": "age_gender_female",
+      "file": "screening/layak-hamil.js",
+      "version": "1.0.0",
+      "gender": "female",
+      "templates": 4
+    },
+    {
+      "id": "wast",
+      "name": "WAST",
+      "description": "Skrining gizi anak (error jika laki-laki)",
+      "category": "maternal-child",
+      "condition": "gender_female",
+      "file": "screening/wast.js",
+      "version": "1.0.0",
+      "gender": "female"
+    },
+    {
+      "id": "kanker-serviks",
+      "name": "Kanker Serviks",
+      "description": "Skrining kanker serviks (error jika laki-laki)",
+      "category": "maternal-child",
+      "condition": "gender_female",
+      "file": "screening/kanker-serviks.js",
+      "version": "1.0.0",
+      "gender": "female"
+    },
+    {
+      "id": "kanker-paru",
+      "name": "Kanker Paru",
+      "description": "Skrining kanker paru (dual conditional: gender + usia)",
+      "category": "special-screening",
+      "condition": "age_gender_custom",
+      "file": "screening/kanker-paru.js",
+      "version": "1.0.0"
+    },
+    {
+      "id": "kanker-kolorektal",
+      "name": "Kanker Kolorektal",
+      "description": "7 field skrining kanker kolorektal",
+      "category": "special-screening",
+      "condition": "none",
+      "file": "screening/kanker-kolorektal.js",
+      "version": "1.0.0",
+      "fields": 7
+    },
+    {
+      "id": "obesitas",
+      "name": "Obesitas",
+      "description": "Dropdown IMT otomatis + warning popup",
+      "category": "special-screening",
+      "condition": "none",
+      "file": "screening/obesitas.js",
+      "version": "1.0.0"
+    },
+    {
+      "id": "adl-barthel",
+      "name": "ADL (Barthel)",
+      "description": "2 template berdasarkan usia (60-69, ≥70)",
+      "category": "special-screening",
+      "condition": "age_template",
+      "file": "screening/adl-barthel.js",
+      "version": "1.0.0",
+      "templates": 2
+    },
+    {
+      "id": "theme-switcher",
+      "name": "Theme Switcher",
+      "description": "Switch theme: Light → Dark → Blue → Green",
+      "category": "utilities",
+      "condition": "none",
+      "file": "utilities/theme-switcher.js",
+      "version": "1.0.0"
+    }
+  ]
+}
