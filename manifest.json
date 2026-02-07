@@ -1,9 +1,0 @@
-{
-    "manifest_version": 3,
-    "name": "PKMKedawung Modular System",
-    "version": "3.0.0",
-    "description": "Sistem modular loader untuk userscript",
-    "author": "cobrabagaskara",
-    "repository": "https://github.com/cobrabagaskara/pkmkedawung",
-    "license": "MIT"
-}
