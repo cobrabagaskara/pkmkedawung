@@ -1,0 +1,191 @@
+/* =============================================================================
+   PKM Kedawung Screening Dashboard - Theme System
+   Theme Switcher: Light → Dark → Blue → Green
+   ============================================================================= */
+
+/* =============================================================================
+   LIGHT THEME (Default)
+   ============================================================================= */
+.theme-light {
+  --primary-color: #667eea;
+  --primary-hover: #5568d3;
+  --secondary-color: #764ba2;
+  --text-color: #333333;
+  --text-secondary: #666666;
+  --bg-color: #f8f9fa;
+  --card-bg: #ffffff;
+  --header-bg: #ffffff;
+  --border-color: #e0e0e0;
+  --hover-bg: #f1f3f5;
+  --success-color: #4CAF50;
+  --warning-color: #FF9800;
+  --error-color: #F44336;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* =============================================================================
+   DARK THEME
+   ============================================================================= */
+.theme-dark {
+  --primary-color: #8a94ff;
+  --primary-hover: #7a85ff;
+  --secondary-color: #b08cff;
+  --text-color: #e6e6e6;
+  --text-secondary: #a0a0a0;
+  --bg-color: #1a1b26;
+  --card-bg: #24283b;
+  --header-bg: #1f2335;
+  --border-color: #343a54;
+  --hover-bg: #2a2f45;
+  --success-color: #71c471;
+  --warning-color: #FFB74D;
+  --error-color: #FF7070;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* =============================================================================
+   BLUE THEME
+   ============================================================================= */
+.theme-blue {
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --secondary-color: #1e40af;
+  --text-color: #1e293b;
+  --text-secondary: #475569;
+  --bg-color: #f0f9ff;
+  --card-bg: #ffffff;
+  --header-bg: #dbeafe;
+  --border-color: #bfdbfe;
+  --hover-bg: #eff6ff;
+  --success-color: #22c55e;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --shadow-sm: 0 2px 4px rgba(59, 130, 246, 0.1);
+  --shadow-md: 0 4px 12px rgba(59, 130, 246, 0.15);
+  --shadow-lg: 0 8px 24px rgba(59, 130, 246, 0.2);
+}
+
+/* =============================================================================
+   GREEN THEME
+   ============================================================================= */
+.theme-green {
+  --primary-color: #10b981;
+  --primary-hover: #059669;
+  --secondary-color: #047857;
+  --text-color: #164e63;
+  --text-secondary: #374151;
+  --bg-color: #f0fdfa;
+  --card-bg: #ffffff;
+  --header-bg: #a7f3d0;
+  --border-color: #6ee7b7;
+  --hover-bg: #d1fae5;
+  --success-color: #22c55e;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --shadow-sm: 0 2px 4px rgba(16, 185, 129, 0.1);
+  --shadow-md: 0 4px 12px rgba(16, 185, 129, 0.15);
+  --shadow-lg: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+
+/* =============================================================================
+   Theme Switcher UI Component
+   ============================================================================= */
+
+.theme-switcher-container {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  display: flex;
+  gap: 10px;
+}
+
+.theme-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.theme-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.theme-button.active {
+  border-color: white;
+  transform: scale(1.05);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+.theme-light-btn {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #6c757d;
+}
+
+.theme-dark-btn {
+  background: linear-gradient(135deg, #1a1b26 0%, #24283b 100%);
+  color: #a0a0a0;
+}
+
+.theme-blue-btn {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+}
+
+.theme-green-btn {
+  background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%);
+  color: #047857;
+}
+
+/* =============================================================================
+   Category Color Coding (Based on category.json colors)
+   ============================================================================= */
+
+.category-general-screening .category-icon,
+.category-general-screening .category-name {
+  color: #4CAF50;
+}
+
+.category-elderly-screening .category-icon,
+.category-elderly-screening .category-name {
+  color: #2196F3;
+}
+
+.category-mental-health .category-icon,
+.category-mental-health .category-name {
+  color: #9C27B0;
+}
+
+.category-maternal-child .category-icon,
+.category-maternal-child .category-name {
+  color: #FF5722;
+}
+
+.category-special-screening .category-icon,
+.category-special-screening .category-name {
+  color: #FF9800;
+}
+
+.category-utilities .category-icon,
+.category-utilities .category-name {
+  color: #607D8B;
+}
+
+/* =============================================================================
+   Theme Persistence Script
+   ============================================================================= */
+
+/* JavaScript will inject theme class on <html> or <body> */
+/* Example: <body class="theme-dark"> */
