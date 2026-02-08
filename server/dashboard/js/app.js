@@ -7,12 +7,17 @@ class PKMDashboard {
     this.categories = [];
     this.modules = [];
     this.filteredModules = [];
+    this.activeModules = [];
+    this.enabledUtilities = [];
     this.currentTheme = 'light';
     this.init();
   }
 
   async init() {
     console.log('🏥 Initializing PKM Dashboard...');
+    
+    // Get status from parent (loader)
+    this.requestStatusFromParent();
     
     // Load data
     await this.loadData();
@@ -26,10 +31,26 @@ class PKMDashboard {
     // Restore saved theme
     this.restoreTheme();
     
-    // Restore category states
-    this.restoreCategoryStates();
-    
     console.log('✅ PKM Dashboard initialized!');
+  }
+
+  requestStatusFromParent() {
+    // Request current status from loader
+    window.parent.postMessage({
+      action: 'get_status'
+    }, '*');
+    
+    // Listen for response
+    window.addEventListener('message', (event) => {
+      // Accept messages from parent only
+      if (event.source !== window.parent) return;
+      
+      if (event.data.action === 'status_response') {
+        this.activeModules = event.data.activeModules || [];
+        this.enabledUtilities = event.data.enabledUtilities || [];
+        this.renderCategories(); // Re-render to show status
+      }
+    });
   }
 
   async loadData() {
@@ -130,17 +151,80 @@ class PKMDashboard {
   }
 
   renderModule(module) {
+    // Check if module is active
+    const isActive = this.activeModules.includes(module.id);
+    const isEnabled = this.enabledUtilities.includes(module.id);
+    
+    // Determine button text & style
+    let buttonText = 'Jalankan';
+    let buttonClass = 'btn-run';
+    let buttonDisabled = false;
+    let statusBadge = '';
+    
+    if (module.type === 'screening') {
+      // Screening modules
+      if (isActive) {
+        buttonText = '✅ Aktif';
+        buttonClass = 'btn-success';
+        buttonDisabled = true;
+        statusBadge = '<span class="badge badge-auto">Auto</span>';
+      }
+    } else if (module.type === 'utility') {
+      // Utility modules
+      if (isEnabled) {
+        buttonText = '🔌 ON';
+        buttonClass = 'btn-success';
+      } else {
+        buttonText = '🔌 OFF';
+        buttonClass = 'btn-secondary';
+      }
+      statusBadge = '<span class="badge badge-manual">Manual</span>';
+    }
+    
+    // Show URL patterns
+    const urlBadge = module.match && module.match.length > 0 
+      ? `<div class="module-url">${this.renderUrlBadge(module.match)}</div>`
+      : '';
+    
     return `
       <div class="module-item" data-module="${module.id}">
         <div class="module-info">
-          <span class="module-name">${module.name}</span>
+          <div class="module-header">
+            <span class="module-name">${module.name}</span>
+            ${statusBadge}
+          </div>
           <span class="module-desc">${module.description}</span>
+          ${urlBadge}
         </div>
-        <button class="btn-run" onclick="window.dashboard.runModule('${module.id}')">
-          Jalankan
+        <button class="${buttonClass}" 
+                ${buttonDisabled ? 'disabled' : ''}
+                onclick="window.dashboard.toggleModule('${module.id}')">
+          ${buttonText}
         </button>
       </div>
     `;
+  }
+
+  renderUrlBadge(urlPatterns) {
+    if (!urlPatterns || urlPatterns.length === 0) return '';
+    
+    return urlPatterns.map(pattern => `
+      <span class="url-badge" title="${pattern}">
+        ${this.simplifyUrl(pattern)}
+      </span>
+    `).join('');
+  }
+
+  simplifyUrl(url) {
+    // Simplify URL for display
+    // Example: "https://e-puskesmas.cirebonkab.go.id/skrining/*" 
+    // -> "/skrining/*"
+    try {
+      const urlObj = new URL(url.replace(/\*/g, ''));
+      return url.replace(urlObj.origin, '');
+    } catch {
+      return url;
+    }
   }
 
   renderCategoryFilter() {
@@ -214,6 +298,44 @@ class PKMDashboard {
     this.saveCategoryState(categoryId, !isExpanded);
   }
 
+  toggleModule(moduleId) {
+    const module = this.modules.find(m => m.id === moduleId);
+    
+    if (!module) {
+      this.showError(`Modul ${moduleId} tidak ditemukan`);
+      return;
+    }
+    
+    if (module.type === 'screening') {
+      // Screening: manual run (override auto-run)
+      this.showWarning('Modul screening sudah auto-run. Manual run akan override.');
+      this.runModule(moduleId);
+    } else if (module.type === 'utility') {
+      // Utility: toggle ON/OFF
+      const currentlyEnabled = this.enabledUtilities.includes(moduleId);
+      const newEnabled = !currentlyEnabled;
+      
+      // Send message to parent (loader)
+      window.parent.postMessage({
+        action: 'toggle_utility',
+        moduleId: moduleId,
+        enabled: newEnabled
+      }, '*');
+      
+      // Update local state
+      if (newEnabled) {
+        this.enabledUtilities.push(moduleId);
+      } else {
+        this.enabledUtilities = this.enabledUtilities.filter(id => id !== moduleId);
+      }
+      
+      // Re-render
+      this.renderCategories();
+      
+      this.showSuccess(`${module.name} ${newEnabled ? 'diaktifkan' : 'dinonaktifkan'}`);
+    }
+  }
+
   runModule(moduleId) {
     const module = this.modules.find(m => m.id === moduleId);
     
@@ -224,19 +346,14 @@ class PKMDashboard {
     
     this.showSuccess(`Menjalankan modul: ${module.name}`);
     
-    // Track analytics (future feature)
-    console.log(`▶️ Running module: ${moduleId}`);
-    
-    // Here you can add logic to:
-    // 1. Send message to parent window to run the module
-    // 2. Open module-specific UI
-    // 3. Load module script dynamically
-    
-    // Example: Send message to parent (Tampermonkey loader)
+    // Send message to parent (Tampermonkey loader)
     window.parent.postMessage({
       action: 'run_module',
       moduleId: moduleId
     }, '*');
+    
+    // Track analytics
+    console.log(`▶️ Running module: ${moduleId}`);
   }
 
   filterModules(query) {
@@ -369,6 +486,12 @@ document.addEventListener('DOMContentLoaded', () => {
   window.toggleCategory = (categoryId) => {
     if (window.dashboard) {
       window.dashboard.toggleCategory(categoryId);
+    }
+  };
+  
+  window.toggleModule = (moduleId) => {
+    if (window.dashboard) {
+      window.dashboard.toggleModule(moduleId);
     }
   };
   
