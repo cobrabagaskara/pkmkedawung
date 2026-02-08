@@ -3,41 +3,6 @@
   "lastUpdated": "2026-02-07",
   "modules": [
     {
-      "id": "faktor-risiko",
-      "name": "Faktor Risiko",
-      "description": "19 field skrining faktor risiko",
-      "version": "1.0.0",
-      "category": "general-screening",
-      "type": "screening",
-      "autoRun": true,
-      "match": [
-        "https://e-puskesmas.cirebonkab.go.id/skrining/*",
-        "https://cirebon.epuskesmas.id/*"
-      ],
-      "condition": {
-        "type": "none"
-      },
-      "file": "modules/screening/faktor-risiko.js",
-      "fields": 19
-    },
-    {
-      "id": "gds-4",
-      "name": "GDS-4",
-      "description": "Skrining depresi lansia",
-      "version": "1.0.0",
-      "category": "elderly-screening",
-      "type": "screening",
-      "autoRun": true,
-      "match": [
-        "https://cirebon.epuskesmas.id/*"
-      ],
-      "condition": {
-        "type": "age_min",
-        "minAge": 60
-      },
-      "file": "modules/screening/gds-4.js"
-    },
-    {
       "id": "theme-switcher",
       "name": "Theme Switcher",
       "description": "Switch theme: Light → Dark → Blue → Green",
