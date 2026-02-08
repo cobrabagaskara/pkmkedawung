@@ -682,3 +682,96 @@ body {
     animation: none !important;
   }
 }
+
+/* =============================================================================
+   Module Badges & URL Display
+   ============================================================================= */
+
+.module-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badge-auto {
+  background: #4CAF50;
+  color: white;
+}
+
+.badge-manual {
+  background: #2196F3;
+  color: white;
+}
+
+.module-url {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.url-badge {
+  background: #f0f0f0;
+  color: #666;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-family: monospace;
+  cursor: help;
+  transition: all 0.2s;
+}
+
+.url-badge:hover {
+  background: #e0e0e0;
+  transform: translateY(-1px);
+}
+
+/* =============================================================================
+   Button Variants
+   ============================================================================= */
+
+.btn-success {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-success:hover {
+  background: #45a049;
+  transform: scale(1.05);
+}
+
+.btn-secondary {
+  background: #607D8B;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+  background: #546E7A;
+  transform: scale(1.05);
+}
+
+.btn-run:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
